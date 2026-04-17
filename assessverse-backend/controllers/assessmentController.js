@@ -58,21 +58,25 @@ exports.createAssessment = async (req, res) => {
 
 exports.getAllAssessments = async (req, res) => {
   try {
-    // 2. Fetch all published assessments
+    // 1. Log to server console to verify the request reached here
+    console.log("Fetching assessments for user:", req.user?._id);
+
+    // 2. Fetch assessments with 'Published' status (Match Compass screenshot)
     const assessments = await Assessment.find({ status: "Published" });
-    
-    // 3. Always check if the result is valid before sending
-    res.status(200).json(assessments);
+
+    // 3. Send successful response
+    return res.status(200).json(assessments);
   } catch (error) {
-    // 4. This log will show you the EXACT error in Render Logs
-    console.error("CRITICAL SERVER ERROR:", error.message); 
-    res.status(500).json({ 
+    // 4. Detailed error logging for Render Logs
+    console.error("GET_ASSESSMENTS_ERROR:", error.message);
+    
+    return res.status(500).json({ 
       success: false, 
-      message: "Server encountered an error fetching assessments",
+      message: "Internal Server Error", 
       error: error.message 
     });
   }
-}// 2. Get Instructor Stats (Fixed Submissions Query)
+};
 exports.getInstructorStats = async (req, res) => {
   try {
     if (!req.user || !req.user._id) return res.status(401).json({ message: "Not authorized" });
