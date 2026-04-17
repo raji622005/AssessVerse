@@ -19,9 +19,9 @@ const EvaluateAssessments = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     
     // Authorization Check: Redirect if not an Instructor
-    if (!user || user.role !== "Instructor") {
+    if (!user || user.role !== "INSTRUCTOR") {
       console.warn("Unauthorized access. Redirecting...");
-      navigate("/dashboard");
+      navigate("/login");
       return;
     }
     fetchSubmissions();
