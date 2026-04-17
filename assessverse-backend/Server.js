@@ -15,7 +15,7 @@ const app = express();
 
 // --- 1. MIDDLEWARE (Must come before Routes) ---
 app.use(cors({
-  origin: ["http://localhost:5173", "https://assessverse-frontend.onrender.com"],
+  origin: "https://assessverse-frontend.onrender.com",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
