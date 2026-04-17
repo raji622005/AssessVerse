@@ -32,7 +32,7 @@ const adminOnly = (req, res, next) => {
 };
 const instructorOnly = (req, res, next) => {
   // Check if req.user exists AND if the role is 'instructor'
-  if (req.user && (req.user.role === "instructor" || req.user.role === "admin")) {
+  if (req.user && (req.user.role === "INSTRUCTOR" )) {
     next();
   } else {
     res.status(403).json({ message: "Access denied: Instructors only" });

@@ -16,15 +16,23 @@ const EvaluateAssessments = () => {
 
   // --- 1. FETCH DATA ON MOUNT ---
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    
-    // Authorization Check: Redirect if not an Instructor
-    if (!user || user.role !== "INSTRUCTOR") {
-      console.warn("Unauthorized access. Redirecting...");
-      navigate("/login");
-      return;
-    }
-    fetchSubmissions();
+    const storedUser = localStorage.getItem("user");
+  
+  if (!storedUser) {
+    navigate("/login");
+    return;
+  }
+
+  const user = JSON.parse(storedUser);
+  
+  // Use .toLowerCase() to avoid "instructor" vs "Instructor" issues
+  if (user.role?.toLowerCase() !== "instructor") {
+    console.warn("Unauthorized: Instructor role required.");
+    navigate("/dashboard"); // Redirect students to their own dashboard instead of login
+    return;
+  }
+
+  fetchSubmissions();
   }, []);
 
   const fetchSubmissions = async () => {
