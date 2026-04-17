@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 
 import Headers from "../../Component/Student/Headers.jsx";
 

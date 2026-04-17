@@ -8,7 +8,7 @@ import { Clock, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 import { useParams, useNavigate } from "react-router-dom"; 
 
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 
 
 

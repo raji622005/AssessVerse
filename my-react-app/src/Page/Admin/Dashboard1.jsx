@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 import { FaBell } from "react-icons/fa";
 import { FaFlag } from "react-icons/fa6";
 import HeaderA from "../../Component/Admin/HeaderA";

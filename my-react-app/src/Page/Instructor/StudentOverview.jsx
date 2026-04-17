@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Headeri from "../../Component/Instructor/Headeri.jsx";
 import Sidebari from "../../Component/Instructor/Sidebari.jsx";
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 
 const StudentOverview = () => {
   const [students, setStudents] = useState([]);

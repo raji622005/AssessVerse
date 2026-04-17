@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 
 import Headeri from "../../Component/Instructor/Headeri.jsx";
 

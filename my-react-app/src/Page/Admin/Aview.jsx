@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 import HeaderA from "../../Component/Admin/HeaderA";
 import SidebarA from "../../Component/Admin/SidebarA";
 import { IoArrowBackOutline } from "react-icons/io5";

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "src/api/axiosConfig";
+import axios from"../../api/axiosConfig";
 import Headeri from "../../Component/Instructor/Headeri.jsx";
 import Sidebari from "../../Component/Instructor/Sidebari.jsx";
 
