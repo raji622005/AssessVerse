@@ -5,6 +5,7 @@ const API_BASE_URL = 'https://assessverse.onrender.com';
 
 const API = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true, // Add this line
 });
 
 // OPTIONAL: Add an "Interceptor" to attach the token automatically
