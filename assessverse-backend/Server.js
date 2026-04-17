@@ -16,8 +16,9 @@ const app = express();
 // --- 1. MIDDLEWARE (Must come before Routes) ---
 app.use(cors({
   origin: "https://assessverse-frontend.onrender.com",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json());
 app.get("/", (req, res) => {
