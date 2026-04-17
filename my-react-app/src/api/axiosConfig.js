@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // This automatically checks if you're running locally or on a hosted server
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-backend-name.onrender.com'  // Your live URL
+  ? 'https://assessverse.onrender.com' // Your live URL
   : 'http://localhost:5000';                 // Your local URL
 
 const API = axios.create({
