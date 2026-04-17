@@ -1,5 +1,5 @@
 const Submission = require("../models/submission");
-const Assessment =require("../models/Assessment.js");
+const Assessment =require("../models/Assessment");
 const Notification = require("../models/Notification");
 const User = require("../models/user");
 const NotificationStudent = require("../models/NotificationStudent");
