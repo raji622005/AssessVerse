@@ -44,7 +44,7 @@ const AssessmentCatalog = () => {
           headers: { Authorization: `Bearer ${token}` },
         };
         // Change this line
-        const res = await axios.get("/api/assessments/get-assessments", config);        // UPDATED URL: Calling the main assessment route defined in server.js
+        const res = await axios.get("/api/submissions/get-assessments", config);        // UPDATED URL: Calling the main assessment route defined in server.js
         console.log("Data from DB:", res.data);
         setAssessments(res.data || []); 
 
