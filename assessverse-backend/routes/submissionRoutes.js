@@ -13,6 +13,7 @@ const assessmentController = require("../controllers/assessmentController");
 // --- STUDENT ROUTES ---
 // Submit a new assessment
 router.post("/", protect, submitAssessment);
+router.get("/", protect, getAllSubmissions);
 // View personal history
 router.get("/my-history", protect, getMyHistory);
 // Student access to get assessments (if needed)

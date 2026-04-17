@@ -71,22 +71,13 @@ exports.submitAssessment = async (req, res) => {
 
 // Add these to prevent the "argument handler" crash:
 exports.getAllSubmissions = async (req, res) => {
-    try {
-        console.log("Fetching all submissions for instructor...");
-        
-        const submissions = await Submission.find()
-            .populate("assessmentId", "title") // Joins Assessment collection for the title
-            .populate("userId", "name")       // Joins User collection for the student name
-            .sort({ createdAt: -1 });
-
-        res.status(200).json(submissions);
-    } catch (error) {
-        console.error("GET_SUBMISSIONS_ERROR:", error.message);
-        res.status(500).json({ 
-            message: "Error fetching submissions", 
-            error: error.message 
-        });
-    }
+  try {
+    // Populate userId to get the student's name for your table
+    const submissions = await Submission.find().populate("userId", "name role");
+    res.status(200).json(submissions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching submissions", error: error.message });
+  }
 };
 
 exports.updateSubmissionScore = async (req, res) => {
