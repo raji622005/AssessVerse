@@ -24,7 +24,6 @@ import RoleManagement from "./Page/Admin/RoleManagement";
 import Euser from "./Page/Admin/Euser";
 import Aview from  "./Page/Admin/Aview";
 import Notificationa from "./Page/Admin/Notification";
-
 import Headeri from "./Component/Instructor/Headeri";
 import Sidebari from "./Component/Instructor/Sidebari";
 import Dashboardi from "./Page/Instructor/Dashboardi";
@@ -40,12 +39,7 @@ import Eedit from "./Page/Instructor/Eedit";
 import Redit from "./Page/Instructor/Redit";
 import Rview from "./Page/Instructor/Rview";
 import Notificationi from  "./Page/Instructor/Notificationi";
-
-import AssessmentFlow from "./Page/Instructor/Assessmentflow";
-
-
-
-import Dashboards from "./Page/Student/Dashboards";
+import AssessmentFlow from "./Page/Instructor/Assessmentflow";import Dashboards from "./Page/Student/Dashboards";
 import AssessmentCatalog from "./Page/Student/AssessmentCatalog";
 import AssessmentInterface from "./Page/Student/Assessmentinterface";
 import MySubmissions from "./Page/Student/Mysubmission";
