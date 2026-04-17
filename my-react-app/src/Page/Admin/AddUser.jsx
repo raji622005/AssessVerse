@@ -50,7 +50,7 @@ const AddUser = () => {
 
       if (res.status === 201 || res.status === 200) {
         alert("User has been created Successfully !!");
-        navigate("/admin/user-management");
+        navigate("/DashboardA");
       }
     } catch (err) {
       // 4. Log the specific error for debugging
