@@ -24,7 +24,7 @@ const protect = async (req, res, next) => {
   }
 };
 const adminOnly = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'instructor')) {
+  if (req.user && (req.user.role === 'ADMIN' )) {
     next();
   } else {
     res.status(403).json({ message: "Access denied: Staff only" });
