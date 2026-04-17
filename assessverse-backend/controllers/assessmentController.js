@@ -58,24 +58,21 @@ exports.createAssessment = async (req, res) => {
 
 exports.getAllAssessments = async (req, res) => {
   try {
-    let query = {};
-
-    // If the logged-in user is a student, show ALL Published tests
-    if (req.user.role === "student") {
-      query = { status: "Published" };
-    } else {
-      // If instructor, show only tests THEY created (for the Manage page)
-      query = { createdBy: req.user._id };
-    }
-
-    const assessments = await Assessment.find(query);
+    // 2. Fetch all published assessments
+    const assessments = await Assessment.find({ status: "Published" });
+    
+    // 3. Always check if the result is valid before sending
     res.status(200).json(assessments);
   } catch (error) {
-    console.error("Fetch Error:", error.message);
-    res.status(500).json({ message: "Error fetching assessments" });
+    // 4. This log will show you the EXACT error in Render Logs
+    console.error("CRITICAL SERVER ERROR:", error.message); 
+    res.status(500).json({ 
+      success: false, 
+      message: "Server encountered an error fetching assessments",
+      error: error.message 
+    });
   }
-};
-// 2. Get Instructor Stats (Fixed Submissions Query)
+}// 2. Get Instructor Stats (Fixed Submissions Query)
 exports.getInstructorStats = async (req, res) => {
   try {
     if (!req.user || !req.user._id) return res.status(401).json({ message: "Not authorized" });
