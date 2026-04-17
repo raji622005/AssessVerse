@@ -49,7 +49,7 @@ const AssessmentFlow = () => {
       status: status, // Matches "Published" or "Draft" in DB
     };
 
-    try {
+   try {
       const API_BASE_URL = "https://assessverse.onrender.com";
       const response = await fetch(`${API_BASE_URL}/api/assessments/create`, {
         method: "POST",
@@ -60,17 +60,29 @@ const AssessmentFlow = () => {
         body: JSON.stringify(finalData),
       });
 
-      const data = await response.json();
+      // --- CRITICAL FIX START ---
+      const contentType = response.headers.get("content-type");
+      let data;
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const errorText = await response.text(); // Capture the HTML error page
+        console.error("Server sent non-JSON response:", errorText);
+        alert("Server Error: The backend returned an invalid response. Check the console for details.");
+        return;
+      }
+      // --- CRITICAL FIX END ---
 
       if (response.ok) {
         alert(`Assessment saved!`);
         window.location.href = "/manage"; 
       } else {
-        // This alerts you to the EXACT validation error from MongoDB
-        alert(`Error: ${data.message}`); 
+        alert(`Error: ${data.message || "Something went wrong"}`); 
       }
     } catch (error) {
-      console.error("Connection Error:", error);
+      console.error("Network/Connection Error:", error);
+      alert("Could not connect to the server. Please try again later.");
     }
   };
 
