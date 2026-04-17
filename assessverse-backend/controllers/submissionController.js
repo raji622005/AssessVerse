@@ -66,25 +66,28 @@ exports.submitAssessment = async (req, res) => {
 // @route   GET /api/submissions
 // @access  Private
 // submissionController.js
+
+// --- KEEP YOUR NEW CODE (submitAssessment, getAllSubmissions) ABOVE THIS ---
+
+// Add these to prevent the "argument handler" crash:
 exports.getAllSubmissions = async (req, res) => {
     try {
+        console.log("Fetching all submissions for instructor...");
+        
         const submissions = await Submission.find()
-            // This 'joins' the assessments collection to get the title
-            .populate("assessmentId", "title") 
-            // This 'joins' the users collection to get the student name
-            .populate("userId", "name")
+            .populate("assessmentId", "title") // Joins Assessment collection for the title
+            .populate("userId", "name")       // Joins User collection for the student name
             .sort({ createdAt: -1 });
 
         res.status(200).json(submissions);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching submissions" });
+        console.error("GET_SUBMISSIONS_ERROR:", error.message);
+        res.status(500).json({ 
+            message: "Error fetching submissions", 
+            error: error.message 
+        });
     }
 };
-// --- KEEP YOUR NEW CODE (submitAssessment, getAllSubmissions) ABOVE THIS ---
-
-// Add these to prevent the "argument handler" crash:
-
 
 exports.updateSubmissionScore = async (req, res) => {
   try {

@@ -1,9 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { 
-    protect, 
-    instructorOnly 
-} = require("../middleware/authMiddleware");
+const { protect, instructorOnly } = require("../middleware/authMiddleware");
 const {
     submitAssessment,
     getAllSubmissions,
@@ -11,26 +8,24 @@ const {
     getSubmissionById,
     updateSubmissionScore
 } = require("../controllers/submissionController");
-const assessmentController=require("../controllers/assessmentController")
-// --- PUBLIC / GENERAL AUTH ROUTES ---
+const assessmentController = require("../controllers/assessmentController");
 
-// Student: Submit a new assessment
-
-// Student: View their own submission history
+// --- STUDENT ROUTES ---
+// Submit a new assessment
+router.post("/", protect, submitAssessment);
+// View personal history
+router.get("/my-history", protect, getMyHistory);
+// Student access to get assessments (if needed)
+router.get("/get-assessments", protect, assessmentController.getAllAssessments);
 
 // --- INSTRUCTOR ONLY ROUTES ---
-router.post("/", protect, submitAssessment);
-router.get("/my-history", protect, getMyHistory);
-
-router.get("/get-assessments", protect, assessmentController.getAllAssessments);
+// Get all student submissions for the evaluation table
+router.get("/all-submissions", protect, instructorOnly, getAllSubmissions);
+// Get all assessments for instructor management
 router.get("/all-assessments", protect, instructorOnly, assessmentController.getAllAssessments);
-
-// Instructor: Get all submissions for evaluation (Cleaned duplicate)
-router.get("/", protect, instructorOnly, getAllSubmissions);
-// Instructor: Fetch a specific submission by ID
-router.get("/:id", protect,  getSubmissionById);
-// Instructor: Update score/grade for a submission
+// Fetch a specific submission by ID for detailed viewing/grading
+router.get("/:id", protect, instructorOnly, getSubmissionById);
+// Update score/grade for a submission
 router.patch("/:id", protect, instructorOnly, updateSubmissionScore);
-router.get("/", protect, instructorOnly, getAllSubmissions); 
-router.get("/all", protect, instructorOnly, assessmentController.getAllAssessments);
+
 module.exports = router;

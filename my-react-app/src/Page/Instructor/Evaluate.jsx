@@ -16,6 +16,14 @@ const EvaluateAssessments = () => {
 
   // --- 1. FETCH DATA ON MOUNT ---
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    
+    // Authorization Check: Redirect if not an Instructor
+    if (!user || user.role !== "Instructor") {
+      console.warn("Unauthorized access. Redirecting...");
+      navigate("/dashboard");
+      return;
+    }
     fetchSubmissions();
   }, []);
 
@@ -29,7 +37,7 @@ const EvaluateAssessments = () => {
         },
       };
 
-      const response = await axios.get("/api/submissions", config);
+      const response = await axios.get("/api/submissions/all-submissions", config);
       setEvaluations(response.data);
       setLoading(false);
     } catch (error) {
