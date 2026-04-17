@@ -6,12 +6,12 @@ import Signuppage from "./Page/Auth/Signuppage";
 import Contactus from "./Page/Auth/Contactus";
 import Homepage from "./Page/Auth/Homepage";
 import Dashboard1 from "./Page/Admin/Dashboard1"
-import Newpassword from "./Page/Auth/newpassword";
+import Newpassword from "./Page/Auth/Newpassword";
 import HeaderA from "./Component/Admin/HeaderA";
 import SidebarA from "./Component/Admin/SidebarA";
 import UserManagement from "./Page/Admin/UserManagement";
 import Forgotpassword from "./Page/Auth/Forgotpassword";
-import AddUser from "./page/Admin/AddUser";
+import AddUser from "./Page/Admin/AddUser";
 import EditUser from "./Page/Admin/EditUser";
 import Verifyotp from "./Page/Auth/Verifyotp";
 import AssessmentOversight from "./Page/Admin/AssessmentOversight";
