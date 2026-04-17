@@ -47,7 +47,7 @@ const Signuppage = () => {
       body:JSON.stringify({
         name,
         email,
-        role,
+        role:upperRole,
         password,
         cpassword,
         
