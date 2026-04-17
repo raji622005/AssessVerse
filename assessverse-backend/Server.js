@@ -14,8 +14,15 @@ const submissionRoutes = require("./routes/submissionRoutes"); // or whatever yo
 const app = express();
 
 // --- 1. MIDDLEWARE (Must come before Routes) ---
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173", "https://assessverse-frontend.onrender.com"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("AssessVerse API is running...");
+});
 // Serve static files for logos/uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
