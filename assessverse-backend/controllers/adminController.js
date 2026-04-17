@@ -34,8 +34,8 @@ exports.updateAssessmentStatus = async (req, res) => {
 exports.getAdminStats = async (req, res) => {
   try {
     // Count Users by Role for the Dashboard Cards
-    const students = await User.countDocuments({ role: "student" });
-    const instructors = await User.countDocuments({ role: "instructor" });
+    const students = await User.countDocuments({ role: "STUDENT" });
+    const instructors = await User.countDocuments({ role: "INSTRUCTOR" });
     
     // Detailed Assessment counts for the Assessments card
     const totalAssessments = await Assessment.countDocuments();

@@ -85,7 +85,6 @@ const AssessmentOversight = () => {
                 <tr>
                   <th style={styles.th}>Title</th>
                   <th style={styles.th}>Instructor</th>
-                  <th style={styles.th}>Type</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Actions</th>
                 </tr>
@@ -100,7 +99,6 @@ const AssessmentOversight = () => {
                       {item.createdBy?.name || item.instructorName || "System Admin"}
                     </td>
 
-                    <td style={styles.td}>{item.type || "MCQ"}</td>
                     
                     <td style={{ 
                       ...styles.td, 

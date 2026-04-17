@@ -16,6 +16,7 @@ const AdminDashboard = () => {
         const res = await axios.get("/api/admin/admin-stats", {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log("Admin API Response:", res.data);
         setAdminData(res.data);
       } catch (err) {
         console.error("Error fetching admin stats", err);
