@@ -39,9 +39,8 @@ const Signuppage = () => {
     return;
   }
   try{
-
-    const res = await fetch("http://localhost:5000/signup",{
-      method:"POST",
+    const API_BASE_URL = "https://assessverse.onrender.com";
+    const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {      method:"POST",
       headers:{
         "Content-Type":"application/json"
       },
