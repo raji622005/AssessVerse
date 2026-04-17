@@ -50,7 +50,8 @@ const AssessmentFlow = () => {
     };
 
     try {
-      const response = await fetch("/api/assessments/create", {
+      const API_BASE_URL = "https://assessverse.onrender.com";
+      const response = await fetch(`${API_BASE_URL}/api/assessments/create`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
