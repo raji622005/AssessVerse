@@ -73,9 +73,7 @@ const EvaluationDetail = () => {
           {/* Summary Info */}
           <div style={{ ...styles.questionCard, backgroundColor: "#E2E8F0", marginBottom: "20px" }}>
              <div style={styles.fieldRow}>
-                <span style={styles.label}>Total Score:</span>
-                <span style={styles.scoreHighlight}>{data.submission.score} / {data.assessment.totalMarks || 100}</span>
-             </div>
+                 </div>
              <div style={styles.fieldRow}>
                 <span style={styles.label}>Status:</span>
                 <span style={{ color: data.submission.status === 'evaluated' ? '#48BB78' : '#ECC94B', fontWeight: 'bold' }}>

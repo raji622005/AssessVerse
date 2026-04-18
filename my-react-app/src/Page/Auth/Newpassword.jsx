@@ -32,11 +32,11 @@ const Newpassword = () => {
     setLoading(true);
     try {
       // API call to your backend
-      const response = await axios.post('http://localhost:5000/new', {
-        email: email,
-        newPassword: password
-      });
-
+      const response = await axios.post('https://assessverse.onrender.com/api/auth/new', {
+  email: email,
+  newPassword: password
+});
+     
       if (response.status === 200) {
         setShowSuccess(true);
       }
