@@ -142,3 +142,27 @@ exports.getSubmissionById = async (req, res) => {
         res.status(500).json({ message: "Error fetching combined data" });
     }
 };
+
+// controllers/submissionController.js
+exports.getSingleSubmission = async (req, res) => {
+  try {
+    // .populate('assessmentId') allows you to see the Assessment Title on the frontend
+    const submission = await Submission.findById(req.params.id).populate('assessmentId');
+
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    // Convert both to strings to ensure the comparison works
+    const isOwner = submission.studentId.toString() === req.user.id.toString();
+    const isAdmin = req.user.role.toLowerCase() === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Not authorized to view this report" });
+    }
+
+    res.status(200).json(submission);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

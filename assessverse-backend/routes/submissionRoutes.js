@@ -6,7 +6,8 @@ const {
     getAllSubmissions,
     getMyHistory,
     getSubmissionById,
-    updateSubmissionScore
+    updateSubmissionScore,
+    getSingleSubmission
 } = require("../controllers/submissionController");
 const assessmentController = require("../controllers/assessmentController");
 
@@ -28,5 +29,6 @@ router.get("/all-assessments", protect, instructorOnly, assessmentController.get
 router.get("/:id", protect, instructorOnly, getSubmissionById);
 // Update score/grade for a submission
 router.patch("/:id", protect, instructorOnly, updateSubmissionScore);
-
+// Ensure it doesn't only say adminOnly
+router.get("/:id", protect, getSingleSubmission);
 module.exports = router;
