@@ -15,6 +15,8 @@ const assessmentController = require("../controllers/assessmentController");
 // Submit a new assessment
 router.post("/", protect, submitAssessment);
 router.get("/", protect, getAllSubmissions);
+router.get("/:id", protect, getSingleSubmission);
+
 // View personal history
 router.get("/my-history", protect, getMyHistory);
 // Student access to get assessments (if needed)
@@ -30,5 +32,4 @@ router.get("/:id", protect, instructorOnly, getSubmissionById);
 // Update score/grade for a submission
 router.patch("/:id", protect, instructorOnly, updateSubmissionScore);
 // Ensure it doesn't only say adminOnly
-router.get("/:id", protect, getSingleSubmission);
 module.exports = router;
