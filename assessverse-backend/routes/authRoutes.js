@@ -9,7 +9,7 @@ const { protect } = require("../middleware/authMiddleware");
 router.post("/signup", authController.register);
 router.post("/login", authController.login);
 // --- PROTECTED ROUTES (Requires Token) ---
-
+router.post("/new", authController.resetPassword);
 // Matches Frontend: axios.get("/api/user/profile")
 router.get("/profile", protect, authController.getProfile);
 
