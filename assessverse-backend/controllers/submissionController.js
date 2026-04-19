@@ -70,16 +70,30 @@ exports.submitAssessment = async (req, res) => {
 // --- KEEP YOUR NEW CODE (submitAssessment, getAllSubmissions) ABOVE THIS ---
 
 // Add these to prevent the "argument handler" crash:
-exports.getAllSubmissions = async (req, res) => {
-  try {
-    // Populate userId to get the student's name for your table
-    const submissions = await Submission.find().populate("userId", "name role");
-    res.status(200).json(submissions);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching submissions", error: error.message });
-  }
-};
+// Backend Controller (submissionsController.js)
+exports. getAllSubmissions = async (req, res) => {
 
+  try {
+
+    const submissions = await Submission.find()
+
+      .populate('assessmentId', 'title') // This replaces the ID with the actual assessment document
+
+      .populate('userId', 'name')        // This replaces the ID with the student's name
+
+      .exec();
+
+
+
+    res.status(200).json(submissions);
+
+  } catch (error) {
+
+    res.status(500).json({ message: error.message });
+
+  }
+
+};
 exports.updateSubmissionScore = async (req, res) => {
   try {
     const { id } = req.params; // Submission ID
