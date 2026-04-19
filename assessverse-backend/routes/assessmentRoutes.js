@@ -29,7 +29,7 @@ router.get("/instructor-stats", protect, assessmentController.getInstructorStats
 router.get("/", protect, assessmentController.getAllAssessments);
 router.get("/all", assessmentController.getAllAssessments);
 router.get("/:id", assessmentController.getAssessmentById);
-router.put("/update-assessment/:id", updateAssessment);
+router.put("/update-assessment/:id", assessmentController.updateAssessment);
 // Instructor's own assessments (for the Manage page)
 router.get("/get-assessments", protect, assessmentController.getAllAssessments);
 router.get('/get-assessment/:id', assessmentController.getAssessmentById);

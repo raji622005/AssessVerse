@@ -23,7 +23,7 @@ const Eedit = () => {
   useEffect(() => {
     const fetchAssessment = async () => {
       try {
-        const res = await axios.get(`/api/data/get-assessment/${id}`);
+        const res = await axios.get(`/api/assessment-data/get-assessment/${id}`);
         if (res.data) {
           setFormData({
             ...res.data,

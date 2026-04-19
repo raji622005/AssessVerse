@@ -6,7 +6,7 @@ const path = require("path");
 const adminRoutes = require("./routes/adminRoutes");
 const notificationRoutes = require("./routes/NotificationRoutes");
 const notificationStudentRoutes = require("./routes/notificationStudentRoutes");
-const assessmentRoutes = require('./routes/assessmentRoutes');
+const assessmentRoutes = require("./routes/assessmentRoutes");
 // ... other middleware ...
 const submissionRoutes = require("./routes/submissionRoutes"); // or whatever you named it
 
@@ -40,10 +40,9 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/assessments", require("./routes/assessmentRoutes"));
 // Data & Dashboard Stats
 // Kept both for compatibility with your existing frontend calls
-app.use('/api/data', assessmentRoutes);
+app.use('/api/assessment-data', assessmentRoutes);
 app.use("/api/data", require("./routes/dataRoutes"));
 app.use("/api/student", require("./routes/dataRoutes"));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/admin", adminRoutes);
 // Role-Specific Routes
 app.use("/api/instructor", require("./routes/instructorRoutes"));
