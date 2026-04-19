@@ -80,7 +80,7 @@ const Eedit = () => {
 
     try {
       // Ensure this endpoint matches your backend route
-      await axios.put(`/api/data/update-assessment/${id}`, finalData);
+      await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
       alert("✅ Assessment updated successfully!");
       navigate(`/view-assessment/${id}`);
     } catch (err) {

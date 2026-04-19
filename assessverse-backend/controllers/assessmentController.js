@@ -193,6 +193,7 @@ exports.deleteAssessmentAndNotify = async (req, res) => {
 };
 exports.updateAssessment = async (req, res) => {
   try {
+    console.log("Saving Total Marks:", req.body.totalMarks);
     const { title, description, duration, questions, totalMarks, status } = req.body;
 
     const updatedAssessment = await Assessment.findByIdAndUpdate(
@@ -201,7 +202,7 @@ exports.updateAssessment = async (req, res) => {
         title, 
         description, 
         duration, 
-        questions, 
+        questions,
         totalMarks, 
         status 
       },
