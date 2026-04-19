@@ -191,3 +191,30 @@ exports.deleteAssessmentAndNotify = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+exports.updateAssessment = async (req, res) => {
+  try {
+    const { title, description, duration, questions, totalMarks, status } = req.body;
+
+    const updatedAssessment = await Assessment.findByIdAndUpdate(
+      req.params.id,
+      { 
+        title, 
+        description, 
+        duration, 
+        questions, 
+        totalMarks, 
+        status 
+      },
+      { new: true, runValidators: true } // runValidators ensures the new data follows schema rules
+    );
+
+    if (!updatedAssessment) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+
+    res.status(200).json(updatedAssessment);
+  } catch (error) {
+    console.error("Update Error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
