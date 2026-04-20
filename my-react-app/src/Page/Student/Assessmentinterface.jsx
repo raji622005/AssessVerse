@@ -56,13 +56,33 @@ const AssessmentInterfaceCopy = () => {
       alert("User session not found. Please log in again.");
       return;
     }
-    
-    const calculatedScore = 85; // Placeholder logic
+
+    // --- DYNAMIC SCORE CALCULATION ---
+    let totalScore = 0;
+
+    assessment.questions.forEach((question, index) => {
+      const userAnswer = answers[index]; 
+      
+      // We check if the answer is not empty
+      if (userAnswer !== undefined && userAnswer !== null && userAnswer !== "") {
+        
+        // 1. If it's an MCQ (storing index 0,1,2), we compare with index or the text
+        // 2. If it's a LONG text answer, we compare strings
+        const formattedUserAnswer = userAnswer.toString().trim().toLowerCase();
+        const formattedCorrectAnswer = question.correctAnswer?.toString().trim().toLowerCase();
+
+        if (formattedUserAnswer === formattedCorrectAnswer) {
+          // Add question marks (default to 1 if the instructor didn't set marks)
+          totalScore += (Number(question.marks) || 1);
+        }
+      }
+    });
+
     const submissionData = {
       userId: userId,
       assessmentId: assessmentId, 
       answers: answers,
-      score: calculatedScore,
+      score: totalScore, // Updated from hardcoded 85 to dynamic totalScore
       submittedAt: new Date(),
     };
 
@@ -80,7 +100,7 @@ const AssessmentInterfaceCopy = () => {
       );
 
       if (res.status === 201 || res.status === 200) {
-        alert("Assessment Submitted Successfully!");
+        alert(`Assessment Submitted Successfully! Your Score: ${totalScore}`);
         navigate("/Dashboards"); 
       }
     } catch (err) {
@@ -92,7 +112,6 @@ const AssessmentInterfaceCopy = () => {
     }
   };
 
-  // Alteration: Using currentIdx as key because instructor data lacks question._id
   const handleOptionSelect = (index, optIdx) => {
     setAnswers(prev => ({ ...prev, [index]: optIdx }));
   };
