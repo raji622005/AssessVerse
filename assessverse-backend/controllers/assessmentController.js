@@ -127,31 +127,51 @@ exports.getAssessmentById = async (req, res) => {
   }
 };
 
-// 5. Submit Assessment (Student Submission Flow)
-exports. submitAssessment = async (req, res) => {
+exports.submitAssessment = async (req, res) => {
   try {
-    console.log("1. Request Body received:", req.body);    
-    const newSubmission = new Submission({
-      userId: req.user._id,
-      assessmentId: req.body.assessmentId,
-      answers: req.body.answers,
-      score: req.body.score || 0
-    });
-    console.log("2. Attempting to save to collection:", Submission.collection.name);
-    newSubmission.markModified('answers');
-    const result = await newSubmission.save();
-    const assessment = await Assessment.findById(req.body.assessmentId);
-    await Notification.create({
-      type: "ASSESSMENT_SUBMITTED",
-      message: `Assessment Submitted: ${assessment ? assessment.title : "Unknown Test"}`,
-      details: `Student: ${req.user.name || "Student ID: " + req.user._id}`,
-    });
-    console.log("3. SAVE SUCCESSFUL! Document ID:", result._id);
+    // 1. EXTRACT SCORE FROM REQ.BODY
+    // We add 'score' here so the backend actually uses the value sent by React
+    const { assessmentId, answers, score } = req.body; 
+    const studentId = req.user._id;
+    const studentName = req.user.name;
 
-    res.status(201).json({ success: true });
+    const assessment = await Assessment.findById(assessmentId);
+    if (!assessment) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+
+    // 2. USE THE PROVIDED SCORE OR FALLBACK TO 0
+    // We remove the old loop that was crashing/failing
+    const finalScore = score !== undefined ? score : 0;
+
+    // 3. Create the Submission record
+    const newSubmission = await Submission.create({
+      userId: studentId,
+      assessmentId,
+      answers, // This will correctly save your Map data
+      score: finalScore,
+      status: "Completed"
+    });
+
+    // 4. NOTIFICATION LOGIC (Remains same)
+    await Notificationi.create({
+      recipient: assessment.createdBy,
+      sender: studentId,
+      studentName: studentName,
+      assessmentTitle: assessment.title,
+      message: "has submitted their assessment.",
+      isRead: false
+    });
+
+    res.status(201).json({
+      success: true,
+      data: newSubmission,
+      message: "Submission successful"
+    });
+
   } catch (error) {
-    console.error("❌ SAVE FAILED:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("Submission Error:", error);
+    res.status(500).json({ message: "Error processing submission", error: error.message });
   }
 };
 // assessmentController.js

@@ -5,42 +5,37 @@ const NotificationStudent = require("../models/NotificationStudent");
 // @desc    Submit an assessment and notify instructor
 // @route   POST /api/submissions
 // @access  Private (Student)
+
 exports.submitAssessment = async (req, res) => {
   try {
-    const { assessmentId, answers } = req.body;
+    // 1. EXTRACT SCORE FROM REQ.BODY
+    // We add 'score' here so the backend actually uses the value sent by React
+    const { assessmentId, answers, score } = req.body; 
     const studentId = req.user._id;
     const studentName = req.user.name;
 
-    // 1. Validate Assessment exists
     const assessment = await Assessment.findById(assessmentId);
     if (!assessment) {
       return res.status(404).json({ message: "Assessment not found" });
     }
 
-    // 2. Calculate Score (Example logic: comparing answers to correct answers)
-    let correctCount = 0;
-    assessment.questions.forEach((q, index) => {
-      if (answers[index] === q.correctAnswer) {
-        correctCount++;
-      }
-    });
-
-    const totalQuestions = assessment.questions.length;
-    const finalScore = Math.round((correctCount / totalQuestions) * 100);
+    // 2. USE THE PROVIDED SCORE OR FALLBACK TO 0
+    // We remove the old loop that was crashing/failing
+    const finalScore = score !== undefined ? score : 0;
 
     // 3. Create the Submission record
     const newSubmission = await Submission.create({
       userId: studentId,
       assessmentId,
-      answers,
+      answers, // This will correctly save your Map data
       score: finalScore,
       status: "Completed"
     });
 
-    // 4. CREATE NOTIFICATION FOR INSTRUCTOR (Using your Notificationi model)
+    // 4. NOTIFICATION LOGIC (Remains same)
     await Notificationi.create({
-      recipient: assessment.createdBy, // Linked to the creator of the assessment
-      sender: studentId,                 // The student who submitted
+      recipient: assessment.createdBy,
+      sender: studentId,
       studentName: studentName,
       assessmentTitle: assessment.title,
       message: "has submitted their assessment.",
@@ -50,18 +45,14 @@ exports.submitAssessment = async (req, res) => {
     res.status(201).json({
       success: true,
       data: newSubmission,
-      message: "Submission successful and Instructor notified"
+      message: "Submission successful"
     });
 
   } catch (error) {
-    console.error("Submission Error Details:", error);
-    res.status(500).json({ 
-      message: "Error processing submission", 
-      error: error.message 
-    });
+    console.error("Submission Error:", error);
+    res.status(500).json({ message: "Error processing submission", error: error.message });
   }
 };
-
 // @desc    Get all submissions (for Instructor/Admin)
 // @route   GET /api/submissions
 // @access  Private

@@ -19,7 +19,6 @@ const Eedit = () => {
     questions: []
   });
 
-  // 1. Fetch initial data
   useEffect(() => {
     const fetchAssessment = async () => {
       try {
@@ -39,7 +38,6 @@ const Eedit = () => {
     if (id) fetchAssessment();
   }, [id]);
 
-  // 2. Sync totals whenever questions array changes
   useEffect(() => {
     const marks = formData.questions.reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
     const count = formData.questions.length;
@@ -64,13 +62,11 @@ const Eedit = () => {
 
   const handleQuestionChange = (index, field, value) => {
     const updated = [...formData.questions];
-    // CRITICAL: Ensure marks are converted to Number before saving to state
     updated[index][field] = field === "marks" ? Number(value) : value;
     setFormData({ ...formData, questions: updated });
   };
 
   const handleUpdate = async () => {
-    // Final recalculation to ensure backend receives the absolute latest numbers
     const finalMarks = formData.questions.reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
     const finalData = { 
         ...formData, 
@@ -79,7 +75,6 @@ const Eedit = () => {
     };
 
     try {
-      // Ensure this endpoint matches your backend route
       await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
       alert("✅ Assessment updated successfully!");
       navigate(`/view-assessment/${id}`);
@@ -89,7 +84,6 @@ const Eedit = () => {
     }
   };
 
-  // Styles kept as per your design...
   const styles = {
     pageWrapper: { width: "100vw", minHeight: "100vh", backgroundColor: "#0A1230", display: "flex", flexDirection: "column" },
     layoutBody: { display: "flex", flex: 1, marginTop: "70px" },
@@ -101,7 +95,6 @@ const Eedit = () => {
     card: { backgroundColor: "#CBD5E0", borderRadius: "12px", padding: "20px", color: "#2D3748", marginBottom: "20px" },
     addBtn: { backgroundColor: "white", color: "#2D3748", padding: "6px 15px", borderRadius: "20px", cursor: "pointer", border: "1px solid #CBD5E0", marginLeft: "10px", fontWeight: "600" },
     saveBtn: { backgroundColor: "#2D3748", color: "white", padding: "10px 30px", borderRadius: "20px", border: "none", fontWeight: "bold", cursor: "pointer" },
-    correctBadge: { fontSize: "10px", backgroundColor: "#48BB78", color: "white", padding: "2px 6px", borderRadius: "4px", marginLeft: "10px" }
   };
 
   if (loading) return <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>;
@@ -119,25 +112,14 @@ const Eedit = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "0.8fr 1.2fr", gap: "60px" }}>
-            {/* Left Column: Meta Data */}
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-                <span style={{ fontSize: "20px" }}> Edit : {formData.title}</span>
-              </div>
               <h4 style={{ marginBottom: "20px", borderBottom: "1px solid #2D3748", paddingBottom: "10px" }}>Assessment Details</h4>
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Name: </span><input name="title" value={formData.title} onChange={handleMetaChange} style={styles.inputInline} /></div>
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Description: </span><input name="description" value={formData.description} onChange={handleMetaChange} style={styles.inputInline} /></div>
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Total Duration (min): </span><input name="duration" type="number" value={formData.duration} onChange={handleMetaChange} style={{ ...styles.inputInline, width: "60px" }} /></div>
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Total Marks: </span><span style={{ fontSize: "16px", fontWeight: "bold", color: "#48BB78" }}>{formData.totalMarks} Marks</span></div>
-              <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Status: </span>
-                <select name="status" value={formData.status} onChange={handleMetaChange} style={{ background: "none", border: "none", color: "white", outline: "none" }}>
-                  <option value="Published" style={{ color: "black" }}>Published</option>
-                  <option value="Draft" style={{ color: "black" }}>Draft</option>
-                </select>
-              </div>
             </div>
 
-            {/* Right Column: Questions */}
             <div>
               <div style={styles.sectionHeader}>
                 <span>➕ Add Question</span>
@@ -151,7 +133,7 @@ const Eedit = () => {
               <div style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: "10px" }}>
                 {formData.questions.map((q, index) => (
                   <div key={index} style={styles.card}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px", borderBottom: "1px solid #A0AEC0", paddingBottom: "5px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px" }}>
                       <span>Type: <strong>{q.type}</strong></span>
                       <div style={{ display: "flex", gap: "10px" }}>
                         <span>Marks: </span>
@@ -159,42 +141,47 @@ const Eedit = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "10px" }}>
-                      <span>{index + 1}. </span>
-                      <input 
-                        value={q.question} 
-                        onChange={(e) => handleQuestionChange(index, "question", e.target.value)}
-                        style={{ width: "100%", background: "none", border: "none", borderBottom: "1px dashed #718096", marginBottom: "15px", fontWeight: "600" }} 
-                      />
-                    </div>
+                    <input 
+                      value={q.question} 
+                      onChange={(e) => handleQuestionChange(index, "question", e.target.value)}
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px dashed #718096", marginBottom: "15px", fontWeight: "600" }} 
+                    />
 
-                    {q.type === "MCQ" ? (
-                      <div style={{ marginLeft: "20px" }}>
-                        {q.options?.map((opt, oIdx) => (
-                          <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                            <input 
-                              type="radio" 
-                              name={`correct-${index}`} 
-                              checked={Number(q.correctAnswer) === oIdx} 
-                              onChange={() => handleQuestionChange(index, "correctAnswer", oIdx)}
-                            />
-                            <input 
-                              value={opt} 
-                              onChange={(e) => {
-                                const newOpts = [...q.options];
-                                newOpts[oIdx] = e.target.value;
-                                handleQuestionChange(index, "options", newOpts);
-                              }} 
-                              style={{ background: "none", border: "none", borderBottom: "1px solid #A0AEC0", flex: 1 }}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={{ marginLeft: "20px", color: "#718096", fontStyle: "italic", fontSize: "12px" }}>
-                        User will provide a {q.type.toLowerCase()} text response.
-                      </div>
-                    )}
+                    {/* CORRECT ANSWER SECTION */}
+                    <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "rgba(255,255,255,0.5)", borderRadius: "8px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "bold", color: "#4A5568" }}>Set Correct Answer:</span>
+                      
+                      {q.type === "MCQ" ? (
+                        <div style={{ marginTop: "10px" }}>
+                          {q.options?.map((opt, oIdx) => (
+                            <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                              <input 
+                                type="radio" 
+                                name={`correct-${index}`} 
+                                checked={Number(q.correctAnswer) === oIdx} 
+                                onChange={() => handleQuestionChange(index, "correctAnswer", oIdx)}
+                              />
+                              <input 
+                                value={opt} 
+                                onChange={(e) => {
+                                  const newOpts = [...q.options];
+                                  newOpts[oIdx] = e.target.value;
+                                  handleQuestionChange(index, "options", newOpts);
+                                }} 
+                                style={{ background: "none", border: "none", borderBottom: "1px solid #A0AEC0", flex: 1 }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <input 
+                          placeholder="Enter exact expected answer for auto-scoring..."
+                          value={q.correctAnswer || ""} 
+                          onChange={(e) => handleQuestionChange(index, "correctAnswer", e.target.value)}
+                          style={{ width: "100%", marginTop: "5px", padding: "8px", borderRadius: "4px", border: "1px solid #A0AEC0" }}
+                        />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
