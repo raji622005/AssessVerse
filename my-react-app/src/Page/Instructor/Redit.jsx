@@ -12,6 +12,7 @@ const EvaluationDetail = () => {
   const [marks, setMarks] = useState({}); 
   const [totalScore, setTotalScore] = useState(0);
 
+  // --- 1. FETCH DATA ---
   useEffect(() => {
     const fetchEvaluationData = async () => {
       try {
@@ -19,11 +20,14 @@ const EvaluationDetail = () => {
         const token = localStorage.getItem("token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
+        // Fetch student submission
         const subRes = await axios.get(`/api/submissions/${id}`, config);
         const submission = subRes.data;
 
         if (submission) {
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
+          
+          // Fetch assessment template for questions
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, config);
           
           setData({
@@ -42,6 +46,7 @@ const EvaluationDetail = () => {
     if (id) fetchEvaluationData();
   }, [id]);
 
+  // --- 2. AUTOMATIC SCORE CALCULATION ---
   useEffect(() => {
     const sum = Object.values(marks).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
     setTotalScore(sum);
@@ -51,11 +56,16 @@ const EvaluationDetail = () => {
     setMarks(prev => ({ ...prev, [qId]: value }));
   };
 
+  // --- 3. SAVE TO DATABASE ---
   const handleSaveMarks = async () => {
     try {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const payload = { score: totalScore, status: "evaluated" };
+
+      const payload = { 
+        score: totalScore, 
+        status: "evaluated" 
+      };
 
       const response = await axios.patch(`/api/submissions/${id}`, payload, config);
 
@@ -99,20 +109,16 @@ const EvaluationDetail = () => {
           </div>
 
           {data.assessment?.questions?.map((q, index) => {
-            // THE FIX: Specifically look for the value at this index/key
-            let studentAnswer = "No answer provided.";
+            // --- UPDATED SEPARATION LOGIC ---
+            const allAnswers = data.submission.answers || {};
             
-            if (data.submission.answers) {
-              // Check if answers is the object seen in your image {"0": "...", "1": "..."}
-              const ansObj = data.submission.answers;
-              const potentialAns = ansObj[q._id] || ansObj[index];
-              
-              if (potentialAns !== undefined) {
-                studentAnswer = typeof potentialAns === 'object' 
-                  ? JSON.stringify(potentialAns) 
-                  : potentialAns;
-              }
-            }
+            // Access answer via ID or index key (0, 1, 2...)
+            const specificAnswer = allAnswers[q._id] ?? allAnswers[index.toString()] ?? allAnswers[index];
+
+            const displayAnswer = typeof specificAnswer === 'object' 
+              ? JSON.stringify(specificAnswer) 
+              : (specificAnswer || "No answer provided.");
+            // --------------------------------
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
@@ -126,7 +132,7 @@ const EvaluationDetail = () => {
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>Answer:</span>
                   <div style={{ ...styles.line, backgroundColor: "rgba(0,0,0,0.05)", padding: "10px", borderRadius: "5px", borderBottom: "none" }}>
-                    {studentAnswer}
+                    {displayAnswer}
                   </div>
                 </div>
 
@@ -149,8 +155,16 @@ const EvaluationDetail = () => {
           </div>
 
           <div style={styles.buttonRow}>
-            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>Cancel</button>
-            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>Save Marks</button>
+            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>
+              Cancel
+            </button>
+            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>
+              Save Marks
+            </button>
+          </div>
+
+          <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
+            © copyrights 2026 AssessVerse
           </div>
         </main>
       </div>
