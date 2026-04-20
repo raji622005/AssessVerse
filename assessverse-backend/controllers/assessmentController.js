@@ -130,16 +130,15 @@ exports.getAssessmentById = async (req, res) => {
 // 5. Submit Assessment (Student Submission Flow)
 exports. submitAssessment = async (req, res) => {
   try {
-    console.log("1. Request Body received:", req.body);
-    
+    console.log("1. Request Body received:", req.body);    
     const newSubmission = new Submission({
       userId: req.user._id,
       assessmentId: req.body.assessmentId,
       answers: req.body.answers,
       score: req.body.score || 0
     });
-
     console.log("2. Attempting to save to collection:", Submission.collection.name);
+    newSubmission.markModified('answers');
     const result = await newSubmission.save();
     const assessment = await Assessment.findById(req.body.assessmentId);
     await Notification.create({

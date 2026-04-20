@@ -154,18 +154,15 @@ const res = await axios.post(
   }
 };
 
-  const handleOptionSelect = (qId, optIdx) => {
-
-    setAnswers({ ...answers, [qId]: optIdx });
-
+const handleOptionSelect = (qId, optIdx) => {
+    if (!qId) return console.error("Question ID is missing!");
+    setAnswers(prev => ({ ...prev, [qId]: optIdx }));
   };
 
-
-
+  // UPDATED: Using functional updates to ensure state reliability
   const handleTextChange = (qId, value) => {
-
-    setAnswers({ ...answers, [qId]: value });
-
+    if (!qId) return console.error("Question ID is missing!");
+    setAnswers(prev => ({ ...prev, [qId]: value }));
   };
 
 
