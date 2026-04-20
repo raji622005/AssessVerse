@@ -67,20 +67,30 @@ const Eedit = () => {
   };
 
   const handleUpdate = async () => {
+    // 1. Final recalculation of marks to ensure accuracy
     const finalMarks = formData.questions.reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
+    const finalQuestionCount = formData.questions.length;
+
+    // 2. Construct the clean payload
     const finalData = { 
         ...formData, 
         totalMarks: finalMarks,
-        totalQuestions: formData.questions.length 
+        totalQuestions: finalQuestionCount 
     };
 
     try {
-      await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
-      alert("✅ Assessment updated successfully!");
-      navigate(`/view-assessment/${id}`);
+      setLoading(true); // Feedback for the user
+      const response = await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
+      
+      if (response.status === 200 || response.status === 201) {
+        alert(`✅ Assessment updated successfully! Total Marks: ${finalMarks}`);
+        navigate(`/view-assessment/${id}`);
+      }
     } catch (err) {
       console.error("Update failed:", err);
-      alert("❌ Save failed. Check console for details.");
+      alert("❌ Save failed. Check if all fields are filled correctly.");
+    } finally {
+      setLoading(false);
     }
   };
 

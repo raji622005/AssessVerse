@@ -6,7 +6,7 @@ const submissionSchema = new mongoose.Schema({
   answers: { type: Map, of: mongoose.Schema.Types.Mixed },
   
   
-  score: { type: Number, default: 0 }, 
+  score: { type: Number, default: 0,required: true }, 
   status: { type: String, default: 'completed' },
   // Use timestamps: true or define createdAt specifically for your dashboard chart
   createdAt: { type: Date, default: Date.now } 
