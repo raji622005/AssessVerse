@@ -48,41 +48,16 @@ const AssessmentInterfaceCopy = () => {
   }, [loading, timeLeft, assessment]);
 
   const handleSubmit = async () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const token = localStorage.getItem("token");
-  const userId = user?._id || user?.id;
-
-  if (!userId || !token) {
-    alert("User session not found. Please log in again.");
-    return;
-  }
-
-  let totalScore = 0;
-
-  assessment.questions.forEach((question, index) => {
-    const studentAns = answers[index];
-    const correctAns = question.correctAnswer;
-
-    // Check if the student actually answered
-    if (studentAns !== undefined && studentAns !== null && studentAns !== "") {
-      
-      // LOGIC: Use loose equality (==) or force both to strings to avoid Number vs String issues
-      // This handles if studentAns is 0 (Number) and correctAns is "0" (String)
-      if (studentAns.toString().trim().toLowerCase() === correctAns.toString().trim().toLowerCase()) {
-        totalScore += (Number(question.marks) || 0);
-      }
-    }
-  });
+  // ... (keep your existing user/token validation)
 
   const submissionData = {
     userId: userId,
-    assessmentId: assessmentId,
+    assessmentId: assessmentId, 
     answers: answers,
-    score: Number(totalScore), // Ensure it's a Number
-    status: "Completed"
+    score: 0, // Always 0 initially because it's manual grading
+    status: "Pending", // Change status to Pending so the instructor knows to grade it
+    submittedAt: new Date(),
   };
-
-  console.log("Submitting Data:", submissionData); // DEBUG: Check this in console!
 
   try {
     setLoading(true);
@@ -90,13 +65,12 @@ const AssessmentInterfaceCopy = () => {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (res.status === 201 || res.status === 200) {
-      alert(`✅ Submitted! Score: ${totalScore}`);
-      navigate("/Dashboards");
+    if (res.status === 201) {
+      alert("Assessment Submitted! Your instructor will grade it soon.");
+      navigate("/Dashboards"); 
     }
   } catch (err) {
     console.error("Submission Error:", err);
-    alert("Failed to submit. Check console.");
   } finally {
     setLoading(false);
   }

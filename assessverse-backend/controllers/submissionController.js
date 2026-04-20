@@ -88,26 +88,28 @@ exports. getAllSubmissions = async (req, res) => {
 exports.updateSubmissionScore = async (req, res) => {
   try {
     const { id } = req.params; // Submission ID
-    const { score, status } = req.body;
-
-    // 1. Update the submission in the database
+    // Added instructorFeedback to the destructured body
+    const { score, instructorFeedback, status } = req.body;
     const submission = await Submission.findByIdAndUpdate(
       id,
-      { score, status: status || "Evaluated" },
+      { 
+        score: Number(score), 
+        instructorFeedback: instructorFeedback || "", 
+        status: status || "Graded" 
+      },
       { new: true }
     ).populate("assessmentId");
 
     if (!submission) {
       return res.status(404).json({ message: "Submission not found" });
     }
-
-    // 2. TRIGGER STUDENT NOTIFICATION
-    // This notifies the student that their specific test has been graded
+    const assessmentTitle = submission.assessmentId?.title || "Assessment";
+    
     await NotificationStudent.create({
       recipient: submission.userId, // The student who owns the submission
-      sender: req.user._id,         // The instructor currently evaluating it
-      assessmentTitle: submission.assessmentId.title,
-      message: `Your assessment has been evaluated. Score: ${score}%`
+      sender: req.user._id,         // The instructor evaluating it
+      assessmentTitle: assessmentTitle,
+      message: `Your evaluation for "${assessmentTitle}" is complete. Final Score: ${score}`
     });
 
     res.status(200).json({
@@ -117,7 +119,11 @@ exports.updateSubmissionScore = async (req, res) => {
     });
   } catch (error) {
     console.error("Evaluation Error:", error.message);
-    res.status(500).json({ message: "Error updating score", error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error updating score", 
+      error: error.message 
+    });
   }
 };
 exports.getMyHistory = async (req, res) => {

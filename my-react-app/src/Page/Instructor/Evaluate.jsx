@@ -24,7 +24,6 @@ const EvaluateAssessments = () => {
   }
 
   const user = JSON.parse(storedUser);
-  
   // Use .toLowerCase() to avoid "instructor" vs "Instructor" issues
   if (user.role?.toLowerCase() !== "instructor") {
     console.warn("Unauthorized: Instructor role required.");

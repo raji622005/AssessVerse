@@ -55,7 +55,7 @@ const Eedit = () => {
       question: `New ${type} Question`,
       marks: type === "LONG" ? 10 : 5,
       options: type === "MCQ" ? ["Option 1", "Option 2", "Option 3", "Option 4"] : [],
-      correctAnswer: type === "MCQ" ? 0 : ""
+      gradingGuideline: "" // Replacing correctAnswer with a guideline for manual review
     };
     setFormData(prev => ({ ...prev, questions: [...prev.questions, newQ] }));
   };
@@ -67,11 +67,9 @@ const Eedit = () => {
   };
 
   const handleUpdate = async () => {
-    // 1. Final recalculation of marks to ensure accuracy
     const finalMarks = formData.questions.reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
     const finalQuestionCount = formData.questions.length;
 
-    // 2. Construct the clean payload
     const finalData = { 
         ...formData, 
         totalMarks: finalMarks,
@@ -79,16 +77,16 @@ const Eedit = () => {
     };
 
     try {
-      setLoading(true); // Feedback for the user
+      setLoading(true);
       const response = await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
       
       if (response.status === 200 || response.status === 201) {
-        alert(`✅ Assessment updated successfully! Total Marks: ${finalMarks}`);
+        alert(`✅ Assessment updated! Manual grading enabled. Total Marks: ${finalMarks}`);
         navigate(`/view-assessment/${id}`);
       }
     } catch (err) {
       console.error("Update failed:", err);
-      alert("❌ Save failed. Check if all fields are filled correctly.");
+      alert("❌ Save failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -105,9 +103,10 @@ const Eedit = () => {
     card: { backgroundColor: "#CBD5E0", borderRadius: "12px", padding: "20px", color: "#2D3748", marginBottom: "20px" },
     addBtn: { backgroundColor: "white", color: "#2D3748", padding: "6px 15px", borderRadius: "20px", cursor: "pointer", border: "1px solid #CBD5E0", marginLeft: "10px", fontWeight: "600" },
     saveBtn: { backgroundColor: "#2D3748", color: "white", padding: "10px 30px", borderRadius: "20px", border: "none", fontWeight: "bold", cursor: "pointer" },
+    manualTag: { fontSize: "11px", fontWeight: "bold", color: "#2F855A", backgroundColor: "#C6F6D5", padding: "2px 8px", borderRadius: "10px", marginBottom: "10px", display: "inline-block" }
   };
 
-  if (loading) return <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading...</div>;
+  if (loading) return <div style={{ color: "white", textAlign: "center", padding: "100px" }}>Loading Assessment...</div>;
 
   return (
     <div style={styles.pageWrapper}>
@@ -118,7 +117,7 @@ const Eedit = () => {
           <div style={styles.titleHeader}>
             <span onClick={() => navigate("/manage")} style={{ opacity: 0.7, cursor: "pointer" }}>⚙️ Manage Assessment</span>
             <span style={{ opacity: 0.7 }}> &gt; </span>
-            <span style={{ fontWeight: "bold" }}>Edit Assessment</span>
+            <span style={{ fontWeight: "bold" }}>Edit & Grading Setup</span>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "0.8fr 1.2fr", gap: "60px" }}>
@@ -127,12 +126,12 @@ const Eedit = () => {
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Name: </span><input name="title" value={formData.title} onChange={handleMetaChange} style={styles.inputInline} /></div>
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Description: </span><input name="description" value={formData.description} onChange={handleMetaChange} style={styles.inputInline} /></div>
               <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Total Duration (min): </span><input name="duration" type="number" value={formData.duration} onChange={handleMetaChange} style={{ ...styles.inputInline, width: "60px" }} /></div>
-              <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Total Marks: </span><span style={{ fontSize: "16px", fontWeight: "bold", color: "#48BB78" }}>{formData.totalMarks} Marks</span></div>
+              <div style={{ marginBottom: "15px" }}><span style={styles.detailsLabel}>Maximum Score: </span><span style={{ fontSize: "16px", fontWeight: "bold", color: "#48BB78" }}>{formData.totalMarks} Marks</span></div>
             </div>
 
             <div>
               <div style={styles.sectionHeader}>
-                <span>➕ Add Question</span>
+                <span>➕ Add New Question</span>
                 <div style={{ display: "flex" }}>
                   <button onClick={() => addQuestion("MCQ")} style={styles.addBtn}>MCQ</button>
                   <button onClick={() => addQuestion("SHORT")} style={styles.addBtn}>Short</button>
@@ -143,62 +142,61 @@ const Eedit = () => {
               <div style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: "10px" }}>
                 {formData.questions.map((q, index) => (
                   <div key={index} style={styles.card}>
+                    <div style={styles.manualTag}>MANUAL EVALUATION REQUIRED</div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px" }}>
                       <span>Type: <strong>{q.type}</strong></span>
                       <div style={{ display: "flex", gap: "10px" }}>
-                        <span>Marks: </span>
-                        <input type="number" value={q.marks} onChange={(e) => handleQuestionChange(index, "marks", e.target.value)} style={{ width: "45px", textAlign: "center" }} />
+                        <span>Weightage: </span>
+                        <input type="number" value={q.marks} onChange={(e) => handleQuestionChange(index, "marks", e.target.value)} style={{ width: "45px", textAlign: "center", borderRadius: "4px", border: "1px solid #A0AEC0" }} />
                       </div>
                     </div>
 
                     <input 
+                      placeholder="Enter question text..."
                       value={q.question} 
                       onChange={(e) => handleQuestionChange(index, "question", e.target.value)}
-                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px dashed #718096", marginBottom: "15px", fontWeight: "600" }} 
+                      style={{ width: "100%", background: "none", border: "none", borderBottom: "1px dashed #718096", marginBottom: "15px", fontWeight: "600", color: "#1A202C" }} 
                     />
 
-                    {/* CORRECT ANSWER SECTION */}
-                    <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "rgba(255,255,255,0.5)", borderRadius: "8px" }}>
-                      <span style={{ fontSize: "12px", fontWeight: "bold", color: "#4A5568" }}>Set Correct Answer:</span>
-                      
-                      {q.type === "MCQ" ? (
-                        <div style={{ marginTop: "10px" }}>
-                          {q.options?.map((opt, oIdx) => (
-                            <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                              <input 
-                                type="radio" 
-                                name={`correct-${index}`} 
-                                checked={Number(q.correctAnswer) === oIdx} 
-                                onChange={() => handleQuestionChange(index, "correctAnswer", oIdx)}
-                              />
-                              <input 
+                    {/* OPTIONS SECTION FOR MCQ */}
+                    {q.type === "MCQ" && (
+                      <div style={{ marginBottom: "15px" }}>
+                        <span style={{ fontSize: "12px", color: "#4A5568", fontWeight: "bold" }}>Options:</span>
+                        {q.options?.map((opt, oIdx) => (
+                          <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "5px" }}>
+                             <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: "1px solid #718096" }}></div>
+                             <input 
                                 value={opt} 
                                 onChange={(e) => {
                                   const newOpts = [...q.options];
                                   newOpts[oIdx] = e.target.value;
                                   handleQuestionChange(index, "options", newOpts);
                                 }} 
-                                style={{ background: "none", border: "none", borderBottom: "1px solid #A0AEC0", flex: 1 }}
+                                style={{ background: "none", border: "none", borderBottom: "1px solid #CBD5E0", flex: 1, fontSize: "14px" }}
                               />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <input 
-                          placeholder="Enter exact expected answer for auto-scoring..."
-                          value={q.correctAnswer || ""} 
-                          onChange={(e) => handleQuestionChange(index, "correctAnswer", e.target.value)}
-                          style={{ width: "100%", marginTop: "5px", padding: "8px", borderRadius: "4px", border: "1px solid #A0AEC0" }}
-                        />
-                      )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* GRADING NOTES SECTION */}
+                    <div style={{ marginTop: "10px", padding: "12px", backgroundColor: "#EDF2F7", borderRadius: "8px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "bold", color: "#4A5568" }}>Instructor Review Notes (Optional):</span>
+                      <textarea 
+                        placeholder="e.g. Look for keywords like 'Component', 'State', 'Hooks'..."
+                        value={q.gradingGuideline || ""} 
+                        onChange={(e) => handleQuestionChange(index, "gradingGuideline", e.target.value)}
+                        style={{ width: "100%", marginTop: "8px", padding: "8px", borderRadius: "4px", border: "1px solid #CBD5E0", fontSize: "13px", fontFamily: "inherit", resize: "none" }}
+                        rows="2"
+                      />
                     </div>
                   </div>
                 ))}
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "15px", marginTop: "20px" }}>
-                <button onClick={() => navigate(-1)} style={{ background: "none", color: "white", border: "1px solid white", padding: "8px 25px", borderRadius: "20px" }}>Cancel</button>
-                <button onClick={handleUpdate} style={styles.saveBtn}>Save Changes</button>
+                <button onClick={() => navigate(-1)} style={{ background: "none", color: "white", border: "1px solid white", padding: "8px 25px", borderRadius: "20px", cursor: "pointer" }}>Cancel</button>
+                <button onClick={handleUpdate} style={styles.saveBtn}>Save Assessment</button>
               </div>
             </div>
           </div>
