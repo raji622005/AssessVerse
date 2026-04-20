@@ -12,7 +12,6 @@ const EvaluationDetail = () => {
   const [marks, setMarks] = useState({}); 
   const [totalScore, setTotalScore] = useState(0);
 
-  // --- 1. FETCH DATA ---
   useEffect(() => {
     const fetchEvaluationData = async () => {
       try {
@@ -20,14 +19,11 @@ const EvaluationDetail = () => {
         const token = localStorage.getItem("token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        // Fetch student submission
         const subRes = await axios.get(`/api/submissions/${id}`, config);
         const submission = subRes.data;
 
         if (submission) {
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
-          
-          // Fetch assessment template for questions
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, config);
           
           setData({
@@ -46,7 +42,6 @@ const EvaluationDetail = () => {
     if (id) fetchEvaluationData();
   }, [id]);
 
-  // --- 2. AUTOMATIC SCORE CALCULATION ---
   useEffect(() => {
     const sum = Object.values(marks).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
     setTotalScore(sum);
@@ -56,17 +51,11 @@ const EvaluationDetail = () => {
     setMarks(prev => ({ ...prev, [qId]: value }));
   };
 
-  // --- 3. SAVE TO DATABASE ---
   const handleSaveMarks = async () => {
     try {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      const payload = { 
-        score: totalScore, 
-        status: "evaluated" 
-      };
-
+      const payload = { score: totalScore, status: "evaluated" };
       const response = await axios.patch(`/api/submissions/${id}`, payload, config);
 
       if (response.status === 200 || response.status === 204) {
@@ -85,9 +74,16 @@ const EvaluationDetail = () => {
     mainContent: { flex: 1, padding: "40px", overflowY: "auto", backgroundColor: "#17276B", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" },
     headerText: { fontSize: "24px", fontWeight: "bold", marginBottom: "10px", textTransform: "uppercase" },
     questionCard: { backgroundColor: "#D9D9D9", color: "black", padding: "40px", borderRadius: "15px", width: "80%", maxWidth: "800px" },
-    fieldRow: { display: "flex", alignItems: "flex-start", marginBottom: "20px", fontSize: "18px" },
-    label: { fontWeight: "bold", width: "150px", flexShrink: 0 },
-    line: { borderBottom: "1px solid black", flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333", wordBreak: "break-word" },
+    
+    // CHANGED: Added flexDirection: "column" to stack label and content
+    fieldRow: { display: "flex", flexDirection: "column", alignItems: "flex-start", marginBottom: "20px", fontSize: "18px", width: "100%" },
+    
+    // CHANGED: Adjusted label for vertical layout
+    label: { fontWeight: "bold", marginBottom: "8px" },
+    
+    // CHANGED: Made line full width
+    line: { borderBottom: "1px solid black", width: "100%", padding: "5px 0", minHeight: "25px", color: "#333", wordBreak: "break-word" },
+    
     buttonRow: { display: "flex", gap: "20px", marginTop: "20px", alignSelf: "flex-end", marginRight: "10%", marginBottom: "50px" },
     btn: { padding: "10px 25px", borderRadius: "20px", border: "none", cursor: "pointer", color: "white", fontWeight: "bold" },
     saveBtn: { backgroundColor: "#48BB78" },
@@ -103,40 +99,38 @@ const EvaluationDetail = () => {
       <div style={styles.layoutBody}>
         <Sidebari />
         <main style={styles.mainContent}>
-          
           <div style={styles.headerText}>
             Evaluating: {data.submission.userId?.name || "Unknown Student"}
           </div>
 
           {data.assessment?.questions?.map((q, index) => {
-            // --- UPDATED SEPARATION LOGIC ---
             const allAnswers = data.submission.answers || {};
-            
-            // Access answer via ID or index key (0, 1, 2...)
             const specificAnswer = allAnswers[q._id] ?? allAnswers[index.toString()] ?? allAnswers[index];
-
             const displayAnswer = typeof specificAnswer === 'object' 
               ? JSON.stringify(specificAnswer) 
               : (specificAnswer || "No answer provided.");
-            // --------------------------------
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
+                {/* Question Block */}
                 <div style={styles.fieldRow}>
-                  <span style={styles.label}>{index + 1}:</span>
+                  <span style={styles.label}>Question {index + 1}:</span>
                   <div style={styles.line}>
                     {q.questionText || q.question || "Question text missing"}
                   </div>
                 </div>
 
+                {/* Answer Block */}
                 <div style={styles.fieldRow}>
-                  <span style={styles.label}>Answer:</span>
-                  <div style={{ ...styles.line, backgroundColor: "rgba(0,0,0,0.05)", padding: "10px", borderRadius: "5px", borderBottom: "none" }}>
+                  <span style={styles.label}>User Answer:</span>
+                  <div style={{ ...styles.line, backgroundColor: "rgba(255,255,255,0.5)", padding: "12px", borderRadius: "8px", borderBottom: "none" }}>
                     {displayAnswer}
                   </div>
                 </div>
 
-                <div style={styles.fieldRow}>
+                {/* Marks Block - Kept as row for side-by-side input */}
+                <div style={{ display: "flex", alignItems: "center", fontSize: "18px" }}>
+                  <span style={{ ...styles.label, marginBottom: 0, marginRight: "15px" }}>Marks:</span>
                   <input 
                     type="number" 
                     style={{ width: '80px', border: 'none', background: 'transparent', borderBottom: '2px solid black', fontSize: '18px', textAlign: 'center', outline: "none" }}
@@ -155,12 +149,8 @@ const EvaluationDetail = () => {
           </div>
 
           <div style={styles.buttonRow}>
-            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>
-              Cancel
-            </button>
-            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>
-              Save Marks
-            </button>
+            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>Cancel</button>
+            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>Save Marks</button>
           </div>
 
           <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
