@@ -48,70 +48,59 @@ const AssessmentInterfaceCopy = () => {
   }, [loading, timeLeft, assessment]);
 
   const handleSubmit = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const token = localStorage.getItem("token");
-    const userId = user?._id || user?.id;
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+  const userId = user?._id || user?.id;
 
-    if (!userId || !token) {
-      alert("User session not found. Please log in again.");
-      return;
-    }
+  if (!userId || !token) {
+    alert("User session not found. Please log in again.");
+    return;
+  }
 
-    // --- DYNAMIC SCORE CALCULATION ---
-    let totalScore = 0;
+  let totalScore = 0;
 
-    assessment.questions.forEach((question, index) => {
-      const userAnswer = answers[index]; 
+  assessment.questions.forEach((question, index) => {
+    const studentAns = answers[index];
+    const correctAns = question.correctAnswer;
+
+    // Check if the student actually answered
+    if (studentAns !== undefined && studentAns !== null && studentAns !== "") {
       
-      // We check if the answer is not empty
-      if (userAnswer !== undefined && userAnswer !== null && userAnswer !== "") {
-        
-        // 1. If it's an MCQ (storing index 0,1,2), we compare with index or the text
-        // 2. If it's a LONG text answer, we compare strings
-        const formattedUserAnswer = userAnswer.toString().trim().toLowerCase();
-        const formattedCorrectAnswer = question.correctAnswer?.toString().trim().toLowerCase();
-
-        if (formattedUserAnswer === formattedCorrectAnswer) {
-          // Add question marks (default to 1 if the instructor didn't set marks)
-          totalScore += (Number(question.marks) || 1);
-        }
+      // LOGIC: Use loose equality (==) or force both to strings to avoid Number vs String issues
+      // This handles if studentAns is 0 (Number) and correctAns is "0" (String)
+      if (studentAns.toString().trim().toLowerCase() === correctAns.toString().trim().toLowerCase()) {
+        totalScore += (Number(question.marks) || 0);
       }
-    });
-
-    const submissionData = {
-      userId: userId,
-      assessmentId: assessmentId, 
-      answers: answers,
-      score: totalScore, // Updated from hardcoded 85 to dynamic totalScore
-      submittedAt: new Date(),
-    };
-
-    try {
-      setLoading(true);
-      const res = await axios.post(
-        "/api/submissions", 
-        submissionData, 
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json" 
-          }
-        }
-      );
-
-      if (res.status === 201 || res.status === 200) {
-        alert(`Assessment Submitted Successfully! Your Score: ${totalScore}`);
-        navigate("/Dashboards"); 
-      }
-    } catch (err) {
-      console.error("Submission Error:", err);
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || "Failed to submit assessment.";
-      alert(`Error: ${errorMessage}`);
-    } finally {
-      setLoading(false);
     }
+  });
+
+  const submissionData = {
+    userId: userId,
+    assessmentId: assessmentId,
+    answers: answers,
+    score: Number(totalScore), // Ensure it's a Number
+    status: "Completed"
   };
 
+  console.log("Submitting Data:", submissionData); // DEBUG: Check this in console!
+
+  try {
+    setLoading(true);
+    const res = await axios.post("/api/submissions", submissionData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.status === 201 || res.status === 200) {
+      alert(`✅ Submitted! Score: ${totalScore}`);
+      navigate("/Dashboards");
+    }
+  } catch (err) {
+    console.error("Submission Error:", err);
+    alert("Failed to submit. Check console.");
+  } finally {
+    setLoading(false);
+  }
+};
   const handleOptionSelect = (index, optIdx) => {
     setAnswers(prev => ({ ...prev, [index]: optIdx }));
   };

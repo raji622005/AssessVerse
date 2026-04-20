@@ -142,7 +142,7 @@ exports.submitAssessment = async (req, res) => {
 
     // 2. USE THE PROVIDED SCORE OR FALLBACK TO 0
     // We remove the old loop that was crashing/failing
-    const finalScore = score !== undefined ? score : 0;
+    const finalScore = score !== undefined ? Number(score) : 0;
 
     // 3. Create the Submission record
     const newSubmission = await Submission.create({
@@ -154,6 +154,7 @@ exports.submitAssessment = async (req, res) => {
     });
 
     // 4. NOTIFICATION LOGIC (Remains same)
+    if (typeof Notificationi !== 'undefined'){
     await Notificationi.create({
       recipient: assessment.createdBy,
       sender: studentId,
@@ -162,7 +163,7 @@ exports.submitAssessment = async (req, res) => {
       message: "has submitted their assessment.",
       isRead: false
     });
-
+  }
     res.status(201).json({
       success: true,
       data: newSubmission,

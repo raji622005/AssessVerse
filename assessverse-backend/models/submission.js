@@ -7,7 +7,7 @@ const submissionSchema = new mongoose.Schema({
   
   
   score: { type: Number, default: 0,required: true }, 
-  status: { type: String, default: 'completed' },
+  status: { type: String,enum: ['Pending', 'Completed', 'Evaluated'], default: 'completed' },
   // Use timestamps: true or define createdAt specifically for your dashboard chart
   createdAt: { type: Date, default: Date.now } 
 }, { timestamps: true }); // This automatically adds createdAt and updatedAt
