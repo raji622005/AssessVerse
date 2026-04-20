@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from"../../api/axiosConfig";
+import axios from "../../api/axiosConfig";
 import Headeri from "../../Component/Instructor/Headeri.jsx";
 import Sidebari from "../../Component/Instructor/Sidebari.jsx";
 
@@ -9,80 +9,74 @@ const EvaluationDetail = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [marks, setMarks] = useState({}); // State to track marks input
-const [totalScore, setTotalScore] = useState(0);
+  const [marks, setMarks] = useState({}); 
+  const [totalScore, setTotalScore] = useState(0);
+
+  // --- 1. FETCH DATA ---
   useEffect(() => {
-  const fetchEvaluationData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token"); // 1. Get token
+    const fetchEvaluationData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      // Configuration object for Axios headers
-      const config = {
-        headers: { 
-          Authorization: `Bearer ${token}` 
+        // Fetch student submission
+        const subRes = await axios.get(`/api/submissions/${id}`, config);
+        const submission = subRes.data;
+
+        if (submission) {
+          const assessmentId = submission.assessmentId?._id || submission.assessmentId;
+          
+          // Fetch assessment template for questions
+          const assessRes = await axios.get(`/api/assessments/${assessmentId}`, config);
+          
+          setData({
+            submission: submission,
+            assessment: assessRes.data
+          });
         }
-      };
-
-      // 2. Fetch the specific submission using the token
-      const subRes = await axios.get(
-        `/api/submissions/${id}`, 
-        config
-      );
-      const submission = subRes.data;
-
-      if (!submission) {
+      } catch (error) {
+        console.error("Fetch Error:", error.response?.data || error.message);
         setData(null);
-      } else {
-        // 3. Extract the ID string correctly to avoid [object Object] 500 errors
-        const assessmentId = submission.assessmentId?._id || submission.assessmentId;
-
-        // 4. Fetch the original assessment questions using the token
-        const assessRes = await axios.get(
-          `/api/assessments/${assessmentId}`, 
-          config
-        );
-        
-        setData({
-          submission: submission,
-          assessment: assessRes.data
-        });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      // Enhanced logging to see why it fails (401, 403, or 500)
-      console.error("Detailed Fetch Error:", error.response ? error.response.data : error.message);
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (id) {
-    fetchEvaluationData();
-  }
-}, [id]);
-  // Redit.jsx
-const handleSaveMarks = async () => {
-  try {
-    const token = localStorage.getItem("token"); // Get token
-    const config = {
-      headers: { Authorization: `Bearer ${token}` }
     };
 
-    // Include config as the THIRD argument for PATCH/POST
-    const response = await axios.patch(
-      `/api/submissions/${id}`, 
-      { score: totalScore, status: "evaluated" }, // Data is 2nd arg
-      config // Headers are 3rd arg
-    );
+    if (id) fetchEvaluationData();
+  }, [id]);
 
-    alert("Marks saved successfully!");
-  } catch (err) {
-    console.error("Error saving marks:", err.response?.data || err.message);
-  }
-};
+  // --- 2. AUTOMATIC SCORE CALCULATION ---
+  useEffect(() => {
+    const sum = Object.values(marks).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
+    setTotalScore(sum);
+  }, [marks]);
+
   const handleMarkChange = (qId, value) => {
-    setMarks({ ...marks, [qId]: value });
+    setMarks(prev => ({ ...prev, [qId]: value }));
+  };
+
+  // --- 3. SAVE TO DATABASE ---
+  const handleSaveMarks = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      const payload = { 
+        score: totalScore, 
+        status: "evaluated" 
+      };
+
+      const response = await axios.patch(`/api/submissions/${id}`, payload, config);
+
+      if (response.status === 200 || response.status === 204) {
+        alert(`✅ Marks saved successfully! Total Score: ${totalScore}`);
+        navigate("/evaluate"); // Redirect back to submission list
+      }
+    } catch (err) {
+      console.error("Save Error:", err.response?.data || err.message);
+      alert("❌ Failed to save marks. Check console for details.");
+    }
   };
 
   const styles = {
@@ -93,15 +87,15 @@ const handleSaveMarks = async () => {
     questionCard: { backgroundColor: "#D9D9D9", color: "black", padding: "40px", borderRadius: "15px", width: "80%", maxWidth: "800px" },
     fieldRow: { display: "flex", alignItems: "flex-start", marginBottom: "20px", fontSize: "18px" },
     label: { fontWeight: "bold", width: "150px", flexShrink: 0 },
-    line: { borderBottom: "1px solid black", flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333" },
+    line: { borderBottom: "1px solid black", flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333", wordBreak: "break-word" },
     buttonRow: { display: "flex", gap: "20px", marginTop: "20px", alignSelf: "flex-end", marginRight: "10%", marginBottom: "50px" },
     btn: { padding: "10px 25px", borderRadius: "20px", border: "none", cursor: "pointer", color: "white", fontWeight: "bold" },
-    saveBtn: { backgroundColor: "#48BB78" }
+    saveBtn: { backgroundColor: "#48BB78" },
+    scoreSummary: { fontSize: "22px", fontWeight: "bold", color: "#48BB78", textAlign: "right", width: "80%", maxWidth: "800px" }
   };
 
   if (loading) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Loading Data...</div></div></div>;
-  
-  if (!data || !data.submission) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Submission Data Not Found.</div></div></div>;
+  if (!data) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Submission Not Found.</div></div></div>;
 
   return (
     <div style={styles.pageWrapper}>
@@ -110,47 +104,63 @@ const handleSaveMarks = async () => {
         <Sidebari />
         <main style={styles.mainContent}>
           
-          {/* FIXED: Added fallbacks for Student Name */}
-          
+          <div style={styles.headerText}>
+            Evaluating: {data.submission.userId?.name || "Unknown Student"}
+          </div>
 
-          {/* FIXED: Map questions with robust field checking */}
-          {data.assessment?.questions?.map((q, index) => (
-            <div key={q._id || index} style={styles.questionCard}>
-              <div style={styles.fieldRow}>
-                <span style={styles.label}>Question {index + 1}:</span>
-                <div style={styles.line}>
-                  {/* Robust check for question text field name */}
-                  {q.questionText || q.question || "Question text is missing in database"}
+          {data.assessment?.questions?.map((q, index) => {
+            // Check for answer by ID or by Index
+            const questionKey = q._id || index;
+            const studentAnswer = data.submission.answers?.[questionKey] || data.submission.answers?.[index];
+
+            return (
+              <div key={questionKey} style={styles.questionCard}>
+                <div style={styles.fieldRow}>
+                  <span style={styles.label}>Question {index + 1}:</span>
+                  <div style={styles.line}>
+                    {q.questionText || q.question || "Question text missing"}
+                  </div>
+                </div>
+
+                <div style={styles.fieldRow}>
+                  <span style={styles.label}>User Answer:</span>
+                  <div style={{ ...styles.line, backgroundColor: "rgba(0,0,0,0.05)", padding: "10px", borderRadius: "5px", borderBottom: "none" }}>
+                    {/* PREVENT ERROR #31: stringify objects, otherwise render value */}
+                    {typeof studentAnswer === 'object' 
+                      ? JSON.stringify(studentAnswer) 
+                      : (studentAnswer || "No answer provided.")}
+                  </div>
+                </div>
+
+                <div style={styles.fieldRow}>
+                  <span style={styles.label}>Marks:</span>
+                  <input 
+                    type="number" 
+                    style={{ width: '80px', border: 'none', background: 'transparent', borderBottom: '2px solid black', fontSize: '18px', textAlign: 'center', outline: "none" }}
+                    placeholder="0"
+                    value={marks[questionKey] || ""}
+                    onChange={(e) => handleMarkChange(questionKey, e.target.value)}
+                  />
+                  <span style={{ marginLeft: '10px' }}>/ {q.marks || q.points || 10}</span>
                 </div>
               </div>
+            );
+          })}
 
-              <div style={styles.fieldRow}>
-                <span style={styles.label}>User Answer :</span>
-                <div style={styles.line}>
-                  {/* Pulls answer from the Object map using Question ID */}
-                  {data.submission.answers?.[q._id] || data.submission.answers?.[index] || "No answer provided."}
-                </div>
-              </div>
-
-              <div style={styles.fieldRow}>
-                <span style={styles.label}>Marks :</span>
-                <input 
-                  type="number" 
-                  style={{ width: '60px', border: 'none', background: 'transparent', borderBottom: '2px solid black', fontSize: '18px', textAlign: 'center' }}
-                  placeholder="0"
-                  onChange={(e) => handleMarkChange(q._id, e.target.value)}
-                />
-                <span style={{ marginLeft: '10px' }}>/ {q.points || 10}</span>
-              </div>
-            </div>
-          ))}
+          <div style={styles.scoreSummary}>
+            Total Score: {totalScore}
+          </div>
 
           <div style={styles.buttonRow}>
-            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>Cancel</button>
-            <button style={{ ...styles.btn, ...styles.saveBtn }}onClick={handleSaveMarks}>Save Marks</button>
+            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>
+              Cancel
+            </button>
+            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>
+              Save Marks
+            </button>
           </div>
-          
-          <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "20px", paddingBottom: "20px" }}>
+
+          <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
             © copyrights 2026 AssessVerse
           </div>
         </main>
