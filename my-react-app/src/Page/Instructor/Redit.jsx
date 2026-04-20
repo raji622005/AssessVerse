@@ -9,7 +9,7 @@ const EvaluationDetail = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [marks, setMarks] = useState({}); 
+  const [marks, setMarks] = useState({});
   const [totalScore, setTotalScore] = useState(0);
 
   useEffect(() => {
@@ -25,10 +25,10 @@ const EvaluationDetail = () => {
         if (submission) {
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, config);
-          
+
           setData({
             submission: submission,
-            assessment: assessRes.data
+            assessment: assessRes.data,
           });
         }
       } catch (error) {
@@ -48,7 +48,7 @@ const EvaluationDetail = () => {
   }, [marks]);
 
   const handleMarkChange = (qId, value) => {
-    setMarks(prev => ({ ...prev, [qId]: value }));
+    setMarks((prev) => ({ ...prev, [qId]: value }));
   };
 
   const handleSaveMarks = async () => {
@@ -60,7 +60,7 @@ const EvaluationDetail = () => {
 
       if (response.status === 200 || response.status === 204) {
         alert(`✅ Marks saved successfully! Total Score: ${totalScore}`);
-        navigate("/evaluate"); 
+        navigate("/evaluate");
       }
     } catch (err) {
       console.error("Save Error:", err.response?.data || err.message);
@@ -74,20 +74,13 @@ const EvaluationDetail = () => {
     mainContent: { flex: 1, padding: "40px", overflowY: "auto", backgroundColor: "#17276B", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" },
     headerText: { fontSize: "24px", fontWeight: "bold", marginBottom: "10px", textTransform: "uppercase" },
     questionCard: { backgroundColor: "#D9D9D9", color: "black", padding: "40px", borderRadius: "15px", width: "80%", maxWidth: "800px" },
-    
-    // CHANGED: Added flexDirection: "column" to stack label and content
     fieldRow: { display: "flex", flexDirection: "column", alignItems: "flex-start", marginBottom: "20px", fontSize: "18px", width: "100%" },
-    
-    // CHANGED: Adjusted label for vertical layout
     label: { fontWeight: "bold", marginBottom: "8px" },
-    
-    // CHANGED: Made line full width
     line: { borderBottom: "1px solid black", width: "100%", padding: "5px 0", minHeight: "25px", color: "#333", wordBreak: "break-word" },
-    
     buttonRow: { display: "flex", gap: "20px", marginTop: "20px", alignSelf: "flex-end", marginRight: "10%", marginBottom: "50px" },
     btn: { padding: "10px 25px", borderRadius: "20px", border: "none", cursor: "pointer", color: "white", fontWeight: "bold" },
     saveBtn: { backgroundColor: "#48BB78" },
-    scoreSummary: { fontSize: "22px", fontWeight: "bold", color: "#48BB78", textAlign: "right", width: "80%", maxWidth: "800px" }
+    scoreSummary: { fontSize: "22px", fontWeight: "bold", color: "#48BB78", textAlign: "right", width: "80%", maxWidth: "800px" },
   };
 
   if (loading) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Loading Data...</div></div></div>;
@@ -104,11 +97,26 @@ const EvaluationDetail = () => {
           </div>
 
           {data.assessment?.questions?.map((q, index) => {
-            const allAnswers = data.submission.answers || {};
-            const specificAnswer = allAnswers[q._id] ?? allAnswers[index.toString()] ?? allAnswers[index];
-            const displayAnswer = typeof specificAnswer === 'object' 
-              ? JSON.stringify(specificAnswer) 
-              : (specificAnswer || "No answer provided.");
+            // 1. NORMALIZE: Handle cases where answers might be inside a single-element array
+            const rawAnswers = data.submission?.answers || {};
+            const allAnswers = Array.isArray(rawAnswers) ? (rawAnswers[0] || {}) : rawAnswers;
+
+            // 2. EXTRACTION: Find the answer by ID or index
+            const specificAnswer =
+              allAnswers[q._id] ??
+              allAnswers[index.toString()] ??
+              allAnswers[index];
+
+            // 3. FORMATTING: Prevent the entire object from displaying in one box
+            let displayValue;
+            if (specificAnswer === undefined || specificAnswer === null) {
+              displayValue = "No answer provided.";
+            } else if (typeof specificAnswer === "object" && !Array.isArray(specificAnswer)) {
+              // Fallback if the extractor grabbed the parent object instead of the value
+              displayValue = specificAnswer[index] || specificAnswer[q._id] || "No answer provided.";
+            } else {
+              displayValue = String(specificAnswer);
+            }
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
@@ -123,34 +131,53 @@ const EvaluationDetail = () => {
                 {/* Answer Block */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>User Answer:</span>
-                  <div style={{ ...styles.line, backgroundColor: "rgba(255,255,255,0.5)", padding: "12px", borderRadius: "8px", borderBottom: "none" }}>
-                    {displayAnswer}
+                  <div
+                    style={{
+                      ...styles.line,
+                      backgroundColor: "rgba(255,255,255,0.8)",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      borderBottom: "none",
+                      color: "#000",
+                    }}
+                  >
+                    {displayValue}
                   </div>
                 </div>
 
-                {/* Marks Block - Kept as row for side-by-side input */}
-                <div style={{ display: "flex", alignItems: "center", fontSize: "18px" }}>
+                {/* Marks Block */}
+                <div style={{ display: "flex", alignItems: "center", fontSize: "18px", marginTop: "10px" }}>
                   <span style={{ ...styles.label, marginBottom: 0, marginRight: "15px" }}>Marks:</span>
-                  <input 
-                    type="number" 
-                    style={{ width: '80px', border: 'none', background: 'transparent', borderBottom: '2px solid black', fontSize: '18px', textAlign: 'center', outline: "none" }}
+                  <input
+                    type="number"
+                    style={{
+                      width: "80px",
+                      border: "none",
+                      background: "transparent",
+                      borderBottom: "2px solid black",
+                      fontSize: "18px",
+                      textAlign: "center",
+                      outline: "none",
+                    }}
                     placeholder="0"
                     value={marks[q._id || index] || ""}
                     onChange={(e) => handleMarkChange(q._id || index, e.target.value)}
                   />
-                  <span style={{ marginLeft: '10px' }}>/ {q.marks || q.points || 5}</span>
+                  <span style={{ marginLeft: "10px" }}>/ {q.marks || q.points || 5}</span>
                 </div>
               </div>
             );
           })}
 
-          <div style={styles.scoreSummary}>
-            Total Score: {totalScore}
-          </div>
+          <div style={styles.scoreSummary}>Total Score: {totalScore}</div>
 
           <div style={styles.buttonRow}>
-            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>Cancel</button>
-            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>Save Marks</button>
+            <button style={{ ...styles.btn, backgroundColor: "#E53E3E" }} onClick={() => navigate(-1)}>
+              Cancel
+            </button>
+            <button style={{ ...styles.btn, ...styles.saveBtn }} onClick={handleSaveMarks}>
+              Save Marks
+            </button>
           </div>
 
           <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
