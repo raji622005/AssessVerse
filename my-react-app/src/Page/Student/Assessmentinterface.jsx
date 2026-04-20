@@ -48,33 +48,50 @@ const AssessmentInterfaceCopy = () => {
   }, [loading, timeLeft, assessment]);
 
   const handleSubmit = async () => {
-  // ... (keep your existing user/token validation)
+    try {
+      // 1. Get the user from localStorage to define userId
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token");
+      const userId = storedUser?._id; 
 
-  const submissionData = {
-    userId: userId,
-    assessmentId: assessmentId, 
-    answers: answers,
-    score: 0, // Always 0 initially because it's manual grading
-    status: "Pending", // Change status to Pending so the instructor knows to grade it
-    submittedAt: new Date(),
-  };
+      // 2. Validate session
+      if (!userId || !token) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+        return;
+      }
 
-  try {
-    setLoading(true);
-    const res = await axios.post("/api/submissions", submissionData, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+      // 3. Construct the submission data
+      const submissionData = {
+        userId: userId,           // Fixed: Now defined from localStorage
+        assessmentId: assessmentId, 
+        answers: answers,         // Contains your MCQ or Text answers
+        score: 0,                 // Default 0 for manual grading
+        status: "Completed",      // Matches your model's enum
+        submittedAt: new Date(),
+      };
 
-    if (res.status === 201) {
-      alert("Assessment Submitted! Your instructor will grade it soon.");
-      navigate("/Dashboards"); 
+      console.log("Submitting Data:", submissionData);
+
+      setLoading(true);
+      
+      // 4. Send the request
+      const res = await axios.post("/api/submissions", submissionData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // 5. Handle response based on your backend structure
+      if (res.status === 201 || res.data.success) {
+        alert("Assessment Submitted! Your instructor will grade it soon.");
+        navigate("/Dashboards"); 
+      }
+    } catch (err) {
+      console.error("Submission Error:", err);
+      alert(err.response?.data?.message || "Failed to submit assessment.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Submission Error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   const handleOptionSelect = (index, optIdx) => {
     setAnswers(prev => ({ ...prev, [index]: optIdx }));
   };
