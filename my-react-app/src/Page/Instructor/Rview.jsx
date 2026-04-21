@@ -23,7 +23,7 @@ const EvaluationDetail = () => {
         const submission = subRes.data;
 
         if (submission) {
-          // 2. Fetch the assessment details
+          // 2. Fetch the assessment details to get the question texts
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -74,39 +74,24 @@ const EvaluationDetail = () => {
             <div style={styles.fieldRow}>
               <span style={styles.label}>Student Name:</span>
               <span style={styles.content}>
-                {/* Try common name fields in case of different API structures */}
                 {data.submission.userId?.name || data.submission.userId?.username || data.submission.studentName || "Unnamed Student"}
-              </span>
-            </div>
-            <div style={styles.fieldRow}>
-              <span style={styles.label}>Status:</span>
-              <span style={{ color: data.submission.status === 'evaluated' ? '#48BB78' : '#ECC94B', fontWeight: 'bold' }}>
-                {data.submission.status?.toUpperCase() || "PENDING"}
               </span>
             </div>
           </div>
 
           {/* Corresponding Questions and Answers */}
           {data.assessment?.questions?.map((q, index) => {
-            // FIX: Access the answer specifically by the current index or question ID
-            const answersObj = data.submission.answers || {};
-            const rawAnswer = answersObj[q._id] || answersObj[index];
+            // THE FIX: 
+            // 1. Get the answers object/array from submission
+            const answers = data.submission.answers || {};
             
-            let displayAnswer = "No answer provided.";
-            
-            // If the answer is the combined object seen in your screenshot,
-            // we only want the specific value for THIS question index.
-            if (rawAnswer !== undefined && rawAnswer !== null) {
-              if (typeof rawAnswer === 'object') {
-                // If the entire answers object was passed to one question, pick the right one
-                displayAnswer = rawAnswer[index] || rawAnswer[q._id] || "No answer provided.";
-              } else {
-                displayAnswer = String(rawAnswer);
-              }
-            }
+            // 2. Try to find the specific answer for this question
+            // We check by ID first, then by the index (0, 1, 2...)
+            const specificAnswer = answers[q._id] ?? answers[index];
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
+                {/* Question Section */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>Question {index + 1}:</span>
                   <div style={styles.content}>
@@ -114,10 +99,13 @@ const EvaluationDetail = () => {
                   </div>
                 </div>
 
+                {/* Corresponding Answer Section */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>User Answer:</span>
                   <div style={styles.content}>
-                    {displayAnswer}
+                    {specificAnswer !== undefined && specificAnswer !== null 
+                      ? String(specificAnswer) 
+                      : "No answer provided."}
                   </div>
                 </div>
               </div>
