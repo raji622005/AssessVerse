@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../api/axiosConfig";
@@ -67,11 +66,9 @@ const Eedit = () => {
   };
 
   const handleUpdate = async () => {
-    // 1. Final recalculation of marks to ensure accuracy
     const finalMarks = formData.questions.reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
     const finalQuestionCount = formData.questions.length;
 
-    // 2. Construct the clean payload
     const finalData = { 
         ...formData, 
         totalMarks: finalMarks,
@@ -79,7 +76,7 @@ const Eedit = () => {
     };
 
     try {
-      setLoading(true); // Feedback for the user
+      setLoading(true);
       const response = await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
       
       if (response.status === 200 || response.status === 201) {
@@ -157,41 +154,25 @@ const Eedit = () => {
                       style={{ width: "100%", background: "none", border: "none", borderBottom: "1px dashed #718096", marginBottom: "15px", fontWeight: "600" }} 
                     />
 
-                    {/* CORRECT ANSWER SECTION */}
-                    <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "rgba(255,255,255,0.5)", borderRadius: "8px" }}>
-                      <span style={{ fontSize: "12px", fontWeight: "bold", color: "#4A5568" }}>Set Correct Answer:</span>
-                      
-                      {q.type === "MCQ" ? (
-                        <div style={{ marginTop: "10px" }}>
-                          {q.options?.map((opt, oIdx) => (
-                            <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                              <input 
-                                type="radio" 
-                                name={`correct-${index}`} 
-                                checked={Number(q.correctAnswer) === oIdx} 
-                                onChange={() => handleQuestionChange(index, "correctAnswer", oIdx)}
-                              />
-                              <input 
-                                value={opt} 
-                                onChange={(e) => {
-                                  const newOpts = [...q.options];
-                                  newOpts[oIdx] = e.target.value;
-                                  handleQuestionChange(index, "options", newOpts);
-                                }} 
-                                style={{ background: "none", border: "none", borderBottom: "1px solid #A0AEC0", flex: 1 }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <input 
-                          placeholder="Enter exact expected answer for auto-scoring..."
-                          value={q.correctAnswer || ""} 
-                          onChange={(e) => handleQuestionChange(index, "correctAnswer", e.target.value)}
-                          style={{ width: "100%", marginTop: "5px", padding: "8px", borderRadius: "4px", border: "1px solid #A0AEC0" }}
-                        />
-                      )}
-                    </div>
+                    {/* Options section for MCQ remains, but the Correct Answer toggle is gone */}
+                    {q.type === "MCQ" && (
+                      <div style={{ marginTop: "10px" }}>
+                        {q.options?.map((opt, oIdx) => (
+                          <div key={oIdx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                            <div style={{ width: "12px", height: "12px", borderRadius: "50%", border: "1px solid #4A5568" }}></div>
+                            <input 
+                              value={opt} 
+                              onChange={(e) => {
+                                const newOpts = [...q.options];
+                                newOpts[oIdx] = e.target.value;
+                                handleQuestionChange(index, "options", newOpts);
+                              }} 
+                              style={{ background: "none", border: "none", borderBottom: "1px solid #A0AEC0", flex: 1 }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
