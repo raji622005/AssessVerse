@@ -23,7 +23,7 @@ const EvaluationDetail = () => {
         const submission = subRes.data;
 
         if (submission) {
-          // 2. Fetch the assessment details to get question texts
+          // 2. Fetch the assessment details
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -47,7 +47,7 @@ const EvaluationDetail = () => {
   const styles = {
     pageWrapper: { display: "flex", width: "100vw", flexDirection: "column", height: "100vh", backgroundColor: "#0A1230", color: "white", overflow: "hidden" },
     layoutBody: { display: "flex", flex: 1, overflow: "hidden" },
-    mainContent: { flex: 1, padding: "140px", overflowY: "auto", backgroundColor: "#17276B", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" },
+    mainContent: { flex: 1, padding: "40px 140px", overflowY: "auto", backgroundColor: "#17276B", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" },
     headerText: { fontSize: "24px", fontWeight: "bold", marginBottom: "10px", textTransform: "uppercase", borderBottom: "2px solid #48BB78", paddingBottom: "5px" },
     questionCard: { backgroundColor: "#D9D9D9", color: "black", padding: "30px", borderRadius: "15px", width: "80%", maxWidth: "800px", boxShadow: "0px 4px 10px rgba(0,0,0,0.3)" },
     fieldRow: { display: "flex", alignItems: "flex-start", marginBottom: "15px", fontSize: "18px" },
@@ -69,11 +69,14 @@ const EvaluationDetail = () => {
         <main style={styles.mainContent}>
           <div style={styles.headerText}>Submission Details</div>
 
-          {/* Student Summary */}
+          {/* Student Info */}
           <div style={{ ...styles.questionCard, backgroundColor: "#E2E8F0", marginBottom: "20px" }}>
             <div style={styles.fieldRow}>
               <span style={styles.label}>Student Name:</span>
-              <span style={styles.content}>{data.submission.userId?.name || "Unnamed Student"}</span>
+              <span style={styles.content}>
+                {/* Try common name fields in case of different API structures */}
+                {data.submission.userId?.name || data.submission.userId?.username || data.submission.studentName || "Unnamed Student"}
+              </span>
             </div>
             <div style={styles.fieldRow}>
               <span style={styles.label}>Status:</span>
@@ -85,16 +88,18 @@ const EvaluationDetail = () => {
 
           {/* Corresponding Questions and Answers */}
           {data.assessment?.questions?.map((q, index) => {
-            // Try to find the answer by question ID first, then fallback to index
-            const rawAnswer = data.submission.answers?.[q._id] ?? data.submission.answers?.[index];
+            // FIX: Access the answer specifically by the current index or question ID
+            const answersObj = data.submission.answers || {};
+            const rawAnswer = answersObj[q._id] || answersObj[index];
             
             let displayAnswer = "No answer provided.";
             
+            // If the answer is the combined object seen in your screenshot,
+            // we only want the specific value for THIS question index.
             if (rawAnswer !== undefined && rawAnswer !== null) {
               if (typeof rawAnswer === 'object') {
-                // If the answer is an object (like the one in your screenshot), 
-                // we extract the values and join them.
-                displayAnswer = Object.values(rawAnswer).join("\n");
+                // If the entire answers object was passed to one question, pick the right one
+                displayAnswer = rawAnswer[index] || rawAnswer[q._id] || "No answer provided.";
               } else {
                 displayAnswer = String(rawAnswer);
               }
@@ -102,7 +107,6 @@ const EvaluationDetail = () => {
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
-                {/* Question Section */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>Question {index + 1}:</span>
                   <div style={styles.content}>
@@ -110,7 +114,6 @@ const EvaluationDetail = () => {
                   </div>
                 </div>
 
-                {/* Answer Section - Now guaranteed to correspond to the question above */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>User Answer:</span>
                   <div style={styles.content}>
@@ -124,6 +127,7 @@ const EvaluationDetail = () => {
           <div style={styles.buttonRow}>
             <button style={styles.backBtn} onClick={() => navigate(-1)}>Go Back</button>
           </div>
+          
           <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
             © copyrights 2026 AssessVerse
           </div>
