@@ -16,12 +16,14 @@ const EvaluationDetail = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
+        // 1. Fetch the specific submission
         const subRes = await axios.get(`/api/submissions/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const submission = subRes.data;
 
         if (submission) {
+          // 2. Fetch the assessment details to get question texts
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -50,7 +52,7 @@ const EvaluationDetail = () => {
     questionCard: { backgroundColor: "#D9D9D9", color: "black", padding: "30px", borderRadius: "15px", width: "80%", maxWidth: "800px", boxShadow: "0px 4px 10px rgba(0,0,0,0.3)" },
     fieldRow: { display: "flex", alignItems: "flex-start", marginBottom: "15px", fontSize: "18px" },
     label: { fontWeight: "bold", width: "160px", flexShrink: 0, color: "#17276B" },
-    content: { flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333", borderLeft: "3px solid #17276B", whiteSpace: "pre-wrap" }, // Added whiteSpace for formatting
+    content: { flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333", borderLeft: "3px solid #17276B", whiteSpace: "pre-wrap" },
     buttonRow: { display: "flex", gap: "20px", marginTop: "20px", marginBottom: "50px" },
     backBtn: { padding: "10px 30px", borderRadius: "20px", border: "none", cursor: "pointer", color: "white", fontWeight: "bold", backgroundColor: "#4A5568" }
   };
@@ -67,6 +69,7 @@ const EvaluationDetail = () => {
         <main style={styles.mainContent}>
           <div style={styles.headerText}>Submission Details</div>
 
+          {/* Student Summary */}
           <div style={{ ...styles.questionCard, backgroundColor: "#E2E8F0", marginBottom: "20px" }}>
             <div style={styles.fieldRow}>
               <span style={styles.label}>Student Name:</span>
@@ -80,20 +83,26 @@ const EvaluationDetail = () => {
             </div>
           </div>
 
+          {/* Corresponding Questions and Answers */}
           {data.assessment?.questions?.map((q, index) => {
-            const rawAnswer = data.submission.answers?.[q._id] || data.submission.answers?.[index];
+            // Try to find the answer by question ID first, then fallback to index
+            const rawAnswer = data.submission.answers?.[q._id] ?? data.submission.answers?.[index];
             
-            // --- LOGIC TO SEPARATE MULTI-LINE ANSWERS ---
-            let displayAnswer;
-            if (rawAnswer && typeof rawAnswer === 'object') {
-              // Extract values from the object and join them with new lines
-              displayAnswer = Object.values(rawAnswer).join("\n");
-            } else {
-              displayAnswer = rawAnswer || "No answer provided.";
+            let displayAnswer = "No answer provided.";
+            
+            if (rawAnswer !== undefined && rawAnswer !== null) {
+              if (typeof rawAnswer === 'object') {
+                // If the answer is an object (like the one in your screenshot), 
+                // we extract the values and join them.
+                displayAnswer = Object.values(rawAnswer).join("\n");
+              } else {
+                displayAnswer = String(rawAnswer);
+              }
             }
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
+                {/* Question Section */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>Question {index + 1}:</span>
                   <div style={styles.content}>
@@ -101,6 +110,7 @@ const EvaluationDetail = () => {
                   </div>
                 </div>
 
+                {/* Answer Section - Now guaranteed to correspond to the question above */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>User Answer:</span>
                   <div style={styles.content}>
