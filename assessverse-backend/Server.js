@@ -30,7 +30,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // --- 2. ROUTE DEFINITIONS ---
 
 // User & Auth Management
-app.use("/api/auth", require("./routes/authRoutes"));      // Login/Register
+app.use("/api/auth", require("./routes/authRoutes"));  
+app.use('/users', require("./routes/userRoutes"));   // Login/Register
 app.use("/api/users", require("./routes/userRoutes"));    // User CRUD (Matches frontend /api/users)
 
 // Admin & Platform Settings

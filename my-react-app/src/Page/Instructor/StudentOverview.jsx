@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Headeri from "../../Component/Instructor/Headeri.jsx";
 import Sidebari from "../../Component/Instructor/Sidebari.jsx";
-import axios from"../../api/axiosConfig";
-
+import axios from "../../api/axiosConfig";
 const StudentOverview = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +30,8 @@ const StudentOverview = () => {
     };
 
     const [userRes, subRes] = await Promise.all([
-      axios.get("/api/users", config),
-      axios.get("/api/submissions", config)
+      axios.get("/users"),   
+      axios.get("/api/submissions"),    // Removed /api and config (interceptor handles it)
     ]);
 
     console.log("✅ Data fetched successfully");
