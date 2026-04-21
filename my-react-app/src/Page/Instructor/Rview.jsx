@@ -16,14 +16,12 @@ const EvaluationDetail = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        // 1. Fetch the specific submission
         const subRes = await axios.get(`/api/submissions/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const submission = subRes.data;
 
         if (submission) {
-          // 2. Fetch the assessment details to get question texts
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -52,8 +50,7 @@ const EvaluationDetail = () => {
     questionCard: { backgroundColor: "#D9D9D9", color: "black", padding: "30px", borderRadius: "15px", width: "80%", maxWidth: "800px", boxShadow: "0px 4px 10px rgba(0,0,0,0.3)" },
     fieldRow: { display: "flex", alignItems: "flex-start", marginBottom: "15px", fontSize: "18px" },
     label: { fontWeight: "bold", width: "160px", flexShrink: 0, color: "#17276B" },
-    content: { flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333", borderLeft: "3px solid #17276B" },
-    scoreHighlight: { fontWeight: "bold", color: "#2F855A", fontSize: "20px" },
+    content: { flex: 1, paddingLeft: "10px", minHeight: "25px", color: "#333", borderLeft: "3px solid #17276B", whiteSpace: "pre-wrap" }, // Added whiteSpace for formatting
     buttonRow: { display: "flex", gap: "20px", marginTop: "20px", marginBottom: "50px" },
     backBtn: { padding: "10px 30px", borderRadius: "20px", border: "none", cursor: "pointer", color: "white", fontWeight: "bold", backgroundColor: "#4A5568" }
   };
@@ -68,17 +65,12 @@ const EvaluationDetail = () => {
       <div style={styles.layoutBody}>
         <Sidebari />
         <main style={styles.mainContent}>
-
           <div style={styles.headerText}>Submission Details</div>
 
-          {/* Summary Info */}
           <div style={{ ...styles.questionCard, backgroundColor: "#E2E8F0", marginBottom: "20px" }}>
             <div style={styles.fieldRow}>
               <span style={styles.label}>Student Name:</span>
-              <span style={styles.content}>
-                {/* Ensure we access .name to avoid rendering the whole user object */}
-                {data.submission.userId?.name || "Unnamed Student"}
-              </span>
+              <span style={styles.content}>{data.submission.userId?.name || "Unnamed Student"}</span>
             </div>
             <div style={styles.fieldRow}>
               <span style={styles.label}>Status:</span>
@@ -88,11 +80,17 @@ const EvaluationDetail = () => {
             </div>
           </div>
 
-          {/* Loop through Questions */}
           {data.assessment?.questions?.map((q, index) => {
-            // Safely extract the answer to prevent Error #31
-            const answer = data.submission.answers?.[q._id] || data.submission.answers?.[index];
-            const displayAnswer = typeof answer === 'object' ? JSON.stringify(answer) : (answer || "No answer provided.");
+            const rawAnswer = data.submission.answers?.[q._id] || data.submission.answers?.[index];
+            
+            // --- LOGIC TO SEPARATE MULTI-LINE ANSWERS ---
+            let displayAnswer;
+            if (rawAnswer && typeof rawAnswer === 'object') {
+              // Extract values from the object and join them with new lines
+              displayAnswer = Object.values(rawAnswer).join("\n");
+            } else {
+              displayAnswer = rawAnswer || "No answer provided.";
+            }
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
@@ -116,7 +114,6 @@ const EvaluationDetail = () => {
           <div style={styles.buttonRow}>
             <button style={styles.backBtn} onClick={() => navigate(-1)}>Go Back</button>
           </div>
-
           <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
             © copyrights 2026 AssessVerse
           </div>
