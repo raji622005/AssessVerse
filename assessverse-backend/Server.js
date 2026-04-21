@@ -31,14 +31,15 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // User & Auth Management
 app.use("/api/auth", require("./routes/authRoutes"));  
+app.use("/api/users", require("./routes/userRoutes"));    
 app.use('/users', require("./routes/userRoutes"));   // Login/Register
-app.use("/api/users", require("./routes/userRoutes"));    // User CRUD (Matches frontend /api/users)
+// User CRUD (Matches frontend /api/users)
 
 // Admin & Platform Settings
 app.use("/api/admin", require("./routes/adminRoutes")); 
-app.use("submissions", submissionRoutes);
   // Branding/Settings
 app.use("/api/submissions", submissionRoutes);
+app.use("submissions", submissionRoutes);
 // Assessments & Submissions
 app.use("/api/assessments", require("./routes/assessmentRoutes"));
 // Data & Dashboard Stats

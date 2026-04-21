@@ -15,6 +15,7 @@ const assessmentController = require("../controllers/assessmentController");
 
 // --- PUBLIC / SHARED ROUTES ---
 // View personal history (Student)
+router.get("/", protect, instructorOnly, getAllSubmissions);
 router.get("/my-history", protect, getMyHistory);
 
 // Student access to list available assessments
