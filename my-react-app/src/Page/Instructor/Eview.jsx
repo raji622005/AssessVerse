@@ -13,19 +13,23 @@ const Eview = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAssessment = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`/api/data/get-assessment/${id}`);
-        setAssessment(res.data);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching assessment:", err);
-        setError("Failed to load assessment data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Replace your current fetchAssessment logic with this:
+  const fetchAssessment = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("token"); // Get token
+    const res = await axios.get(`/api/assessments/get-assessment/${id}`, {
+      headers: { Authorization: `Bearer ${token}` } // Send token
+    });
+    setAssessment(res.data);
+    setError(null);
+  } catch (err) {
+    console.error("Error fetching assessment:", err);
+    setError("Failed to load assessment data.");
+  } finally {
+    setLoading(false);
+  }
+};
 
     if (id) {
       fetchAssessment();
