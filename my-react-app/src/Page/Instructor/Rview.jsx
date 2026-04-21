@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from"../../api/axiosConfig";
+import axios from "../../api/axiosConfig";
 import Headeri from "../../Component/Instructor/Headeri.jsx";
 import Sidebari from "../../Component/Instructor/Sidebari.jsx";
 
@@ -15,22 +15,23 @@ const EvaluationDetail = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        
+
         // 1. Fetch the specific submission
         const subRes = await axios.get(`/api/submissions/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const submission = subRes.data;
 
         if (submission) {
           // 2. Fetch the assessment details to get question texts
-          const assessRes = await axios.get(`/api/assessments/${submission.assessmentId._id ||submission.assessmentId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+          const assessmentId = submission.assessmentId?._id || submission.assessmentId;
+          const assessRes = await axios.get(`/api/assessments/${assessmentId}`, {
+            headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           setData({
             submission: submission,
-            assessment: assessRes.data
+            assessment: assessRes.data,
           });
         }
       } catch (error) {
@@ -58,7 +59,7 @@ const EvaluationDetail = () => {
   };
 
   if (loading) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Loading Evaluation...</div></div></div>;
-  
+
   if (!data || !data.submission) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Evaluation Data Not Found.</div></div></div>;
 
   return (
@@ -67,46 +68,55 @@ const EvaluationDetail = () => {
       <div style={styles.layoutBody}>
         <Sidebari />
         <main style={styles.mainContent}>
-          
+
           <div style={styles.headerText}>Submission Details</div>
-          
+
           {/* Summary Info */}
           <div style={{ ...styles.questionCard, backgroundColor: "#E2E8F0", marginBottom: "20px" }}>
-             <div style={styles.fieldRow}>
-                 </div>
-             <div style={styles.fieldRow}>
-                <span style={styles.label}>Status:</span>
-                <span style={{ color: data.submission.status === 'evaluated' ? '#48BB78' : '#ECC94B', fontWeight: 'bold' }}>
-                    {data.submission.status?.toUpperCase()}
-                </span>
-             </div>
+            <div style={styles.fieldRow}>
+              <span style={styles.label}>Student Name:</span>
+              <span style={styles.content}>
+                {/* Ensure we access .name to avoid rendering the whole user object */}
+                {data.submission.userId?.name || "Unnamed Student"}
+              </span>
+            </div>
+            <div style={styles.fieldRow}>
+              <span style={styles.label}>Status:</span>
+              <span style={{ color: data.submission.status === 'evaluated' ? '#48BB78' : '#ECC94B', fontWeight: 'bold' }}>
+                {data.submission.status?.toUpperCase() || "PENDING"}
+              </span>
+            </div>
           </div>
 
           {/* Loop through Questions */}
-          {data.assessment?.questions?.map((q, index) => (
-            <div key={q._id || index} style={styles.questionCard}>
-              <div style={styles.fieldRow}>
-                <span style={styles.label}>Question {index + 1}:</span>
-                <div style={styles.content}>
-                  {q.questionText || q.question || "No question text available"}
+          {data.assessment?.questions?.map((q, index) => {
+            // Safely extract the answer to prevent Error #31
+            const answer = data.submission.answers?.[q._id] || data.submission.answers?.[index];
+            const displayAnswer = typeof answer === 'object' ? JSON.stringify(answer) : (answer || "No answer provided.");
+
+            return (
+              <div key={q._id || index} style={styles.questionCard}>
+                <div style={styles.fieldRow}>
+                  <span style={styles.label}>Question {index + 1}:</span>
+                  <div style={styles.content}>
+                    {q.questionText || q.question || "No question text available"}
+                  </div>
+                </div>
+
+                <div style={styles.fieldRow}>
+                  <span style={styles.label}>User Answer:</span>
+                  <div style={styles.content}>
+                    {displayAnswer}
+                  </div>
                 </div>
               </div>
-
-              <div style={styles.fieldRow}>
-                <span style={styles.label}>User Answer:</span>
-                <div style={styles.content}>
-                  {data.submission.answers?.[q._id] || data.submission.answers?.[index] || "No answer provided."}
-                </div>
-              </div>
-
-             
-            </div>
-          ))}
+            );
+          })}
 
           <div style={styles.buttonRow}>
             <button style={styles.backBtn} onClick={() => navigate(-1)}>Go Back</button>
           </div>
-          
+
           <div style={{ fontSize: "12px", opacity: 0.7, paddingBottom: "20px" }}>
             © copyrights 2026 AssessVerse
           </div>
