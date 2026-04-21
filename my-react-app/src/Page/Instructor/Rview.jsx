@@ -16,14 +16,12 @@ const EvaluationDetail = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        // 1. Fetch the specific submission
         const subRes = await axios.get(`/api/submissions/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const submission = subRes.data;
 
         if (submission) {
-          // 2. Fetch the assessment details to get the question texts
           const assessmentId = submission.assessmentId?._id || submission.assessmentId;
           const assessRes = await axios.get(`/api/assessments/${assessmentId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -58,7 +56,6 @@ const EvaluationDetail = () => {
   };
 
   if (loading) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Loading Evaluation...</div></div></div>;
-
   if (!data || !data.submission) return <div style={styles.pageWrapper}><Headeri /><div style={styles.layoutBody}><Sidebari /><div style={styles.mainContent}>Evaluation Data Not Found.</div></div></div>;
 
   return (
@@ -69,7 +66,7 @@ const EvaluationDetail = () => {
         <main style={styles.mainContent}>
           <div style={styles.headerText}>Submission Details</div>
 
-          {/* Student Info */}
+          {/* Student Info Card */}
           <div style={{ ...styles.questionCard, backgroundColor: "#E2E8F0", marginBottom: "20px" }}>
             <div style={styles.fieldRow}>
               <span style={styles.label}>Student Name:</span>
@@ -77,21 +74,31 @@ const EvaluationDetail = () => {
                 {data.submission.userId?.name || data.submission.userId?.username || data.submission.studentName || "Unnamed Student"}
               </span>
             </div>
+            <div style={styles.fieldRow}>
+              <span style={styles.label}>Status:</span>
+              <span style={{ color: data.submission.status === 'evaluated' ? '#48BB78' : '#ECC94B', fontWeight: 'bold', paddingLeft: "10px" }}>
+                {data.submission.status?.toUpperCase() || "PENDING"}
+              </span>
+            </div>
           </div>
 
-          {/* Corresponding Questions and Answers */}
+          {/* Questions and Specific Answers Mapping */}
           {data.assessment?.questions?.map((q, index) => {
-            // THE FIX: 
-            // 1. Get the answers object/array from submission
-            const answers = data.submission.answers || {};
+            // 1. Get the source of answers (check if it's an array or object)
+            const allAnswers = data.submission.answers || {};
             
-            // 2. Try to find the specific answer for this question
-            // We check by ID first, then by the index (0, 1, 2...)
-            const specificAnswer = answers[q._id] ?? answers[index];
+            // 2. Extract the specific value for this question
+            // We check by Question ID, then string index, then numerical index
+            let displayAnswer = allAnswers[q._id] ?? allAnswers[index.toString()] ?? allAnswers[index];
+
+            // 3. Fallback for "[object Object]" issues
+            // If the answer itself is an object (common in some Mongo structures), drill into it
+            if (displayAnswer && typeof displayAnswer === 'object' && !Array.isArray(displayAnswer)) {
+              displayAnswer = displayAnswer.text || displayAnswer.answer || JSON.stringify(displayAnswer);
+            }
 
             return (
               <div key={q._id || index} style={styles.questionCard}>
-                {/* Question Section */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>Question {index + 1}:</span>
                   <div style={styles.content}>
@@ -99,13 +106,10 @@ const EvaluationDetail = () => {
                   </div>
                 </div>
 
-                {/* Corresponding Answer Section */}
                 <div style={styles.fieldRow}>
                   <span style={styles.label}>User Answer:</span>
                   <div style={styles.content}>
-                    {specificAnswer !== undefined && specificAnswer !== null 
-                      ? String(specificAnswer) 
-                      : "No answer provided."}
+                    {displayAnswer ? String(displayAnswer) : "No answer provided."}
                   </div>
                 </div>
               </div>
