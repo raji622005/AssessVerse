@@ -31,7 +31,7 @@ const StudentOverview = () => {
 
     const [userRes, subRes] = await Promise.all([
       axios.get("/users"),   
-      axios.get("/api/submissions"),    // Removed /api and config (interceptor handles it)
+      axios.get("/submissions"),    // Removed /api and config (interceptor handles it)
     ]);
 
     console.log("✅ Data fetched successfully");
