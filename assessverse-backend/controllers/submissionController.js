@@ -141,9 +141,12 @@ exports.getSubmissionById = async (req, res) => {
         const submission = await Submission.findById(req.params.id)
             .populate({
                 path: "assessmentId",
-                select: "title instructorName" // Select exactly the fields you need
+                select: "title instructorName questions" // Select exactly the fields you need
+            })
+            .populate({
+                path: "userId",
+                select: "name username" // This allows the frontend to find .name or .username
             });
-
         if (!submission) {
             return res.status(404).json({ message: "Submission not found" });
         }
