@@ -80,7 +80,7 @@ const Eedit = () => {
       const response = await axios.put(`/api/assessment-data/update-assessment/${id}`, finalData);
       
       if (response.status === 200 || response.status === 201) {
-        alert(`✅ Assessment updated successfully! Total Marks: ${finalMarks}`);
+        alert(`✅ Assessment updated successfully! `);
         navigate(`/view-assessment/${id}`);
       }
     } catch (err) {
