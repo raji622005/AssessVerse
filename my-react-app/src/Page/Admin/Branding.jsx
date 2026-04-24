@@ -16,9 +16,8 @@ const Branding = () => {
         });
         
         if (res.data) {
-          // FIXED: Use the baseURL from your axios configuration instead of hardcoded localhost
+          // Use the dynamic baseURL from axios to support Render deployment
           const backendBaseUrl = axios.defaults.baseURL || "https://assessverse.onrender.com";
-          
           setBranding({
             name: res.data.name,
             logoUrl: `${backendBaseUrl}${res.data.logoUrl}`
@@ -33,62 +32,36 @@ const Branding = () => {
     fetchBrandingData();
   }, []);
 
-  // ... (rest of your styles stay the same)
+  // FIXED: styles MUST be defined before the return statement
   const styles = {
-
-    body: { margin: 0, width: "99vw", minHeight: "100vh", fontFamily: "Acme", backgroundColor: "#17276B" },
-
+    body: { margin: 0, width: "100vw", minHeight: "100vh", fontFamily: "Acme", backgroundColor: "#17276B", overflowX: "hidden" },
     layoutContainer: { display: "flex" },
-
-    mainContent: { flex: 1, padding: "20px", color: "white" },
-
+    mainContent: { flex: 1, padding: "20px", color: "white", marginLeft: "230px", marginTop: "80px" },
     brandingContainer: { 
-
       backgroundColor: "rgba(255,255,255,0.1)", 
-
       borderRadius: "10px", 
-
       padding: "40px", 
-
       maxWidth: "600px", 
-
       margin: "30px auto", 
-
       textAlign: "center", 
-
       border: "1px solid rgba(255,255,255,0.2)" 
-
     },
-
     title: { fontSize: "32px", marginBottom: "40px", fontWeight: "bold" },
-
     subtitle: { fontSize: "18px", color: "rgba(255,255,255,0.6)", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "1px" },
-
     displayValue: { fontSize: "28px", color: "white", marginBottom: "40px", fontWeight: "500" },
-
     logoImage: { 
-
       width: "180px", 
-
       height: "180px", 
-
       objectFit: "contain", 
-
       borderRadius: "50%", 
-
       backgroundColor: "white", 
-
       padding: "15px", 
-
       border: "4px solid rgba(255,255,255,0.2)",
-
       marginTop: "10px"
-
     },
-
     footer: { textAlign: "center", marginTop: "100px", fontSize: "14px", opacity: 0.8 }
-
   };
+
   return (
     <div style={styles.body}>
       <HeaderA />
@@ -109,12 +82,11 @@ const Branding = () => {
 
                 <div>
                   <h3 style={styles.subtitle}>Institute Logo</h3>
-                  {/* Added onError to show a placeholder if the image still fails to load */}
                   <img 
                     src={branding.logoUrl} 
                     alt="Institute Logo" 
                     style={styles.logoImage} 
-                    onError={(e) => { e.target.src = "https://via.placeholder.com/180?text=Logo+Not+Found"; }}
+                    onError={(e) => { e.target.src = "https://via.placeholder.com/180?text=No+Logo"; }}
                   />
                 </div>
               </>
