@@ -3,11 +3,13 @@ import axios from "../../api/axiosConfig";
 import HeaderA from "../../Component/Admin/HeaderA";
 import SidebarA from "../../Component/Admin/SidebarA";
 
+// 1. Import PDF libraries
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 const LogsAndReports = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Filter States
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isRoleOpen, setIsRoleOpen] = useState(false);
@@ -31,50 +33,70 @@ const LogsAndReports = () => {
     fetchLogs();
   }, []);
 
-  // Filtering Logic
   const filteredRows = logs.filter((item) => {
     const matchesRole = roleFilter === "All" || item.role === roleFilter;
     const matchesStatus = statusFilter === "All" || item.status === statusFilter;
     return matchesRole && matchesStatus;
   });
 
+  // 2. Function to generate PDF
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title to the PDF
+    doc.setFontSize(18);
+    doc.text("AssessVerse - Activity Logs & Reports", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Report Generated: ${new Date().toLocaleString()}`, 14, 30);
+
+    // Define table columns
+    const tableColumn = ["Date", "User Name", "Email ID", "Role", "Action", "Status"];
+    
+    // Define table rows
+    const tableRows = filteredRows.map(log => [
+      new Date(log.date).toLocaleDateString(),
+      log.name || "N/A",
+      log.email || "N/A",
+      log.role,
+      log.action,
+      log.status
+    ]);
+
+    // Generate table using jspdf-autotable
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [23, 39, 107] } // Matches your dashboard #17276B
+    });
+
+    doc.save(`AssessVerse_Logs_${Date.now()}.pdf`);
+  };
+
   const styles = {
+    // ... your existing styles ...
+    downloadBtn: {
+        padding: "8px 20px",
+        borderRadius: "20px",
+        border: "none",
+        backgroundColor: "#00ff88", // Green accent color
+        color: "#17276B",
+        cursor: "pointer",
+        fontWeight: "bold",
+        fontFamily: "Acme",
+        fontSize: "14px",
+        marginLeft: "auto" // Pushes it to the right
+    },
+    // Include all other styles from your previous code here...
     body: { margin: 0, width: "100vw", minHeight: "100vh", fontFamily: "Acme", backgroundColor: "#17276B", overflowX: "hidden" },
     layoutContainer: { display: "flex" },
     mainContent: { flex: 1, padding: "20px", color: "white", marginLeft: "230px", marginTop: "80px" },
     headerRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" },
-    filterBtn: { 
-        padding: "8px 20px", 
-        borderRadius: "20px", 
-        border: "none", 
-        backgroundColor: "white", 
-        color: "#17276B", 
-        cursor: "pointer", 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "10px", 
-        fontFamily: "Acme",
-        fontSize: "14px" 
-    },
-    dropdownMenu: {
-        position: "absolute",
-        top: "110%",
-        left: 0,
-        backgroundColor: "white",
-        borderRadius: "8px",
-        boxShadow: "0px 4px 12px rgba(0,0,0,0.3)",
-        zIndex: 10,
-        minWidth: "150px",
-        overflow: "hidden"
-    },
-    dropdownItem: {
-        padding: "10px 15px",
-        color: "#17276B",
-        cursor: "pointer",
-        fontSize: "14px",
-        borderBottom: "1px solid #eee",
-        transition: "background 0.2s"
-    },
+    filterBtn: { padding: "8px 20px", borderRadius: "20px", border: "none", backgroundColor: "white", color: "#17276B", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontFamily: "Acme", fontSize: "14px" },
+    dropdownMenu: { position: "absolute", top: "110%", left: 0, backgroundColor: "white", borderRadius: "8px", boxShadow: "0px 4px 12px rgba(0,0,0,0.3)", zIndex: 10, minWidth: "150px", overflow: "hidden" },
+    dropdownItem: { padding: "10px 15px", color: "#17276B", cursor: "pointer", fontSize: "14px", borderBottom: "1px solid #eee" },
     table: { width: "95%", borderCollapse: "collapse", border: "1px solid rgba(255,255,255,0.2)", textAlign: "center" },
     th: { padding: "15px", border: "1px solid rgba(255,255,255,0.2)", fontSize: "18px", fontWeight: "normal", backgroundColor: "rgba(255,255,255,0.1)" },
     td: { padding: "12px", border: "1px solid rgba(255,255,255,0.2)", fontSize: "15px" },
@@ -90,10 +112,14 @@ const LogsAndReports = () => {
             <h2 style={{ fontSize: "32px", display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
               📊 Logs & Reports
             </h2>
+            {/* 3. Add the Download Button */}
+            <button style={styles.downloadBtn} onClick={downloadPDF}>
+               📥 Download PDF
+            </button>
           </div>
 
-          {/* FILTER DROPDOWNS SECTION */}
           <div style={{ display: "flex", gap: "15px", marginBottom: "30px" }}>
+            {/* ... Role and Status dropdowns remain the same ... */}
             <div style={{ position: "relative" }}>
               <button style={styles.filterBtn} onClick={() => setIsRoleOpen(!isRoleOpen)}>
                 Role: {roleFilter} <span style={{ fontSize: "10px" }}>⌵</span>
@@ -101,15 +127,7 @@ const LogsAndReports = () => {
               {isRoleOpen && (
                 <div style={styles.dropdownMenu}>
                   {["All", "Student", "Instructor"].map((role) => (
-                    <div
-                      key={role}
-                      style={styles.dropdownItem}
-                      onClick={() => { setRoleFilter(role); setIsRoleOpen(false); }}
-                      onMouseOver={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-                      onMouseOut={(e) => (e.target.style.backgroundColor = "white")}
-                    >
-                      {role}
-                    </div>
+                    <div key={role} style={styles.dropdownItem} onClick={() => { setRoleFilter(role); setIsRoleOpen(false); }}>{role}</div>
                   ))}
                 </div>
               )}
@@ -122,15 +140,7 @@ const LogsAndReports = () => {
               {isStatusOpen && (
                 <div style={styles.dropdownMenu}>
                   {["All", "Completed", "Success", "Pending", "Failed"].map((status) => (
-                    <div
-                      key={status}
-                      style={styles.dropdownItem}
-                      onClick={() => { setStatusFilter(status); setIsStatusOpen(false); }}
-                      onMouseOver={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-                      onMouseOut={(e) => (e.target.style.backgroundColor = "white")}
-                    >
-                      {status}
-                    </div>
+                    <div key={status} style={styles.dropdownItem} onClick={() => { setStatusFilter(status); setIsStatusOpen(false); }}>{status}</div>
                   ))}
                 </div>
               )}
@@ -138,15 +148,17 @@ const LogsAndReports = () => {
           </div>
 
           {loading ? (
-            <p style={{ textAlign: "center", marginTop: "50px" }}>Fetching records from database...</p>
+            <p style={{ textAlign: "center", marginTop: "50px" }}>Fetching records...</p>
           ) : (
             <table style={styles.table}>
               <thead>
                 <tr>
                   <th style={styles.th}>Date</th>
                   <th style={styles.th}>User Name</th>
+                  <th style={styles.th}>Email ID</th>
                   <th style={styles.th}>Role</th>
                   <th style={styles.th}>Action</th>
+                  <th style={styles.th}>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -154,26 +166,19 @@ const LogsAndReports = () => {
                   filteredRows.map((log) => (
                     <tr key={log._id}>
                       <td style={styles.td}>{new Date(log.date).toLocaleDateString()}</td>
-                      
-                      {/* Using the flattened keys from your backend map */}
                       <td style={styles.td}>{log.name || "N/A"}</td>
-                      
+                      <td style={{ ...styles.td, fontSize: "13px", opacity: 0.8 }}>{log.email || "N/A"}</td>
                       <td style={styles.td}>{log.role}</td>
                       <td style={styles.td}>{log.action}</td>
-                      
+                      <td style={{ ...styles.td, color: log.status === "Failed" ? "#ff4d4d" : "#00ff88" }}>{log.status}</td>
                     </tr>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan="6" style={{ padding: "40px", opacity: 0.5 }}>
-                      No logs found matching these filters.
-                    </td>
-                  </tr>
+                  <tr><td colSpan="6" style={{ padding: "40px", opacity: 0.5 }}>No logs found.</td></tr>
                 )}
               </tbody>
             </table>
           )}
-
           <footer style={{ textAlign: "center", marginTop: "40px", fontSize: "14px", opacity: 0.6 }}>
             © copyrights 2026 AssessVerse
           </footer>
