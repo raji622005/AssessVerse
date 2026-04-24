@@ -114,6 +114,7 @@ exports.getActivityLogs = async (req, res) => {
       date: s.createdAt || new Date(), 
       // CHANGED: Match the populated 'userId' field
       name: s.userId?.name || "Unknown Student",
+      email: s.userId?.email || "N/A",
       role: "Student",
       action: "Submitted Test",
       // Match your screenshot status (e.g., "evaluated") or default to "Success"
@@ -126,6 +127,7 @@ exports.getActivityLogs = async (req, res) => {
       _id: i._id,
       date: i.createdAt || new Date(),
       name: i.createdBy?.name || "Unknown Instructor",
+      email: i.createdBy?.email || "N/A",
       role: "Instructor",
       action: "Created Test",
       status: i.status === "Published" ? "Success" : "Failed",
