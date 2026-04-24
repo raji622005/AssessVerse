@@ -306,9 +306,9 @@ const LogsAndReports = () => {
   filteredRows.map((log) => (
     <tr key={log._id}>
       <td style={styles.td}>{new Date(log.date).toLocaleDateString()}</td>
-      <td style={styles.td}>{log.userName || "N/A"}</td> {/* New Field */}
+      <td style={styles.td}>{log.userId?.name || "N/A"}</td> {/* New Field */}
       <td style={{ ...styles.td, fontSize: "13px", opacity: 0.8 }}>
-        {log.email || "N/A"}
+        {log.userId?.email || "N/A"}
       </td> {/* New Field */}
       <td style={styles.td}>{log.role}</td>
       <td style={styles.td}>{log.action}</td>
