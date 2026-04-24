@@ -54,16 +54,14 @@ const LogsAndReports = () => {
     doc.text(`Report Generated: ${new Date().toLocaleString()}`, 14, 30);
 
     // Define table columns
-    const tableColumn = ["Date", "User Name", "Email ID", "Role", "Action", "Status"];
+    const tableColumn = ["Date", "User Name",  "Role", "Action"];
     
     // Define table rows using flattened data keys
     const tableRows = filteredRows.map(log => [
       new Date(log.date).toLocaleDateString(),
       log.name || "N/A",
-      log.email || "N/A",
       log.role,
       log.action,
-      log.status
     ]);
 
     // Generate table using the imported autoTable function
