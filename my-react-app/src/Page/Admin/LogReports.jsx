@@ -195,10 +195,8 @@ const LogsAndReports = () => {
                 <tr>
                   <th style={styles.th}>Date</th>
                   <th style={styles.th}>User Name</th>
-                  <th style={styles.th}>Email ID</th>
                   <th style={styles.th}>Role</th>
                   <th style={styles.th}>Action</th>
-                  <th style={styles.th}>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,17 +205,10 @@ const LogsAndReports = () => {
                     <tr key={log._id}>
                       <td style={styles.td}>{new Date(log.date).toLocaleDateString()}</td>
                       <td style={styles.td}>{log.name || "N/A"}</td>
-                      <td style={{ ...styles.td, fontSize: "13px", opacity: 0.8 }}>
-                        {log.email || "N/A"}
-                      </td>
+                     
                       <td style={styles.td}>{log.role}</td>
                       <td style={styles.td}>{log.action}</td>
-                      <td style={{ 
-                        ...styles.td, 
-                        color: log.status === "Failed" || log.status === "error" ? "#ff4d4d" : "#00ff88" 
-                      }}>
-                        {log.status}
-                      </td>
+                      
                     </tr>
                   ))
                 ) : (
