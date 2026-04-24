@@ -287,10 +287,12 @@ const LogsAndReports = () => {
                 <tr>
 
                   <th style={styles.th}>Date</th>
-
+                  <th style={styles.th}>User Name</th>
+                  <th style={styles.th}>Email ID</th>
                   <th style={styles.th}>Role</th>
-
+                  
                   <th style={styles.th}>Action</th>
+
 
                   <th style={styles.th}>Status</th>
 
@@ -301,37 +303,31 @@ const LogsAndReports = () => {
               <tbody>
 
                 {filteredRows.length > 0 ? (
-
-                  filteredRows.map((log) => (
-
-                    <tr key={log._id}>
-
-                      <td style={styles.td}>{new Date(log.date).toLocaleDateString()}</td>
-
-                      <td style={styles.td}>{log.role}</td>
-
-                      <td style={styles.td}>{log.action}</td>
-
-                      <td style={{ ...styles.td, color: log.status === "Failed" ? "#ff4d4d" : "#00ff88" }}>
-
-                        {log.status}
-
-                      </td>
-
-                    </tr>
-
-                  ))
-
-                ) : (
-
-                  <tr>
-
-                    <td colSpan="4" style={{ padding: "40px", opacity: 0.5 }}>No logs found matching these filters.</td>
-
-                  </tr>
-
-                )}
-
+  filteredRows.map((log) => (
+    <tr key={log._id}>
+      <td style={styles.td}>{new Date(log.date).toLocaleDateString()}</td>
+      <td style={styles.td}>{log.userName || "N/A"}</td> {/* New Field */}
+      <td style={{ ...styles.td, fontSize: "13px", opacity: 0.8 }}>
+        {log.email || "N/A"}
+      </td> {/* New Field */}
+      <td style={styles.td}>{log.role}</td>
+      <td style={styles.td}>{log.action}</td>
+      <td style={{ 
+        ...styles.td, 
+        color: log.status === "Failed" || log.status === "error" ? "#ff4d4d" : "#00ff88" 
+      }}>
+        {log.status}
+      </td>
+    </tr>
+  ))
+) : (
+  <tr>
+    {/* Change colSpan to 6 because we now have 6 columns */}
+    <td colSpan="6" style={{ padding: "40px", opacity: 0.5 }}>
+      No logs found matching these filters.
+    </td>
+  </tr>
+)}
               </tbody>
 
             </table>
