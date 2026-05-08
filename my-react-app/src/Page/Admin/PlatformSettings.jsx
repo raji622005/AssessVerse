@@ -107,13 +107,7 @@ const PlatformSettings = () => {
               <button style={styles.actionBtn} onClick={()=>{navigate('/Role')}}>View</button>
             </div>
 
-            <div style={styles.settingCard}>
-              <h3 style={styles.cardTitle}>Branding</h3>
-              <p style={styles.cardDescription}>
-                 platform logo and the platform name.
-              </p>
-              <button style={styles.actionBtn} onClick={()=>{navigate('/branding')}}>View</button>
-            </div>
+            
           </div>
 
           <footer style={styles.footer}>
